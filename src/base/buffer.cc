@@ -1,7 +1,10 @@
 #include <algorithm>
+#include <cstdio>
 #include <cassert>
 #include <cinttypes>
+#include <fstream>
 #include <iostream>
+#include <memory>
 
 #include "base/buffer.h"
 
@@ -92,6 +95,47 @@ Buffer::iterator& Buffer::iterator::operator--() {
   // It's an error to have an empty buffer.
   assert(offset_ >= 0);
   return *this;
+}
+
+Buffer Buffer::FromFile(const std::string& path) {
+  std::unique_ptr<FILE, decltype(&fclose)> file(fopen(path.c_str(), "r"),
+                                                &fclose);
+  Buffer buf;
+
+  if (!file) {
+    return buf;
+  }
+
+  Node* cur = nullptr;
+
+  while (!feof(file.get())) {
+    char raw[BUFSIZ];
+    size_t num_read = fread(raw, 1, sizeof(buf), file.get());
+    for (size_t i = 0; i < num_read; ++i) {
+      // TODO(bcf): Handle unicode
+      if (cur == nullptr || cur->gap_start == kNodeSize) {
+        Node* new_node = new Node;
+        new_node->prev = cur;
+        new_node->next = nullptr;
+        new_node->gap_start = 0;
+        new_node->gap_end = kNodeSize;
+
+        if (cur == nullptr) {
+          buf.head_ = new_node;
+          buf.tail_ = new_node;
+        } else {
+          cur->next = new_node;
+          buf.tail_ = new_node;
+        }
+
+        cur = new_node;
+      }
+
+      cur->buf[cur->gap_start++] = raw[i];
+    }
+  }
+
+  return buf;
 }
 
 Buffer::Buffer() = default;

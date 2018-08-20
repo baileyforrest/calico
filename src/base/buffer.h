@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iterator>
+#include <string>
 
 #include "base/macros.h"
 
@@ -43,6 +44,9 @@ class Buffer {
     Node* node_ = nullptr;
     int16_t offset_ = 0;
   };
+
+  // Returns empty file if |path| doesn't exist.
+  static Buffer FromFile(const std::string& path);
 
   Buffer();
   Buffer(Buffer&& other);

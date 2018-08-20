@@ -1,7 +1,6 @@
 #include <err.h>
 #include <cstdlib>
 #include <iostream>
-#include <fstream>
 
 #include "base/buffer.h"
 
@@ -11,14 +10,10 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  std::ifstream ifs(argv[1]);
-  if (!ifs) {
-    err(EXIT_FAILURE, "Failed to open %s", argv[1]);
-  }
-
-  Buffer buf;
-  while (!ifs.eof()) {
-    buf.insert(buf.end(), ifs.get());
+  Buffer buf = Buffer::FromFile(argv[1]);
+  if (buf.empty()) {
+    std::cout << "Failed to read file\n";
+    return EXIT_FAILURE;
   }
 
   return EXIT_SUCCESS;
