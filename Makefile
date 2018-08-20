@@ -1,6 +1,7 @@
 CC = clang
 CXX = clang++
 CLANG_FORMAT ?= clang-format
+GTEST_DIR := third_party/googletest/googletest
 
 SAN_FLAGS := \
 	-fsanitize=address \
@@ -13,13 +14,14 @@ SRC_DIR = src
 COMPILE_FLAGS = -g -std=c++14 -Wall -Wextra -Werror -Wno-unused-parameter
 RCOMPILE_FLAGS = -DNDEBUG -O3
 DCOMPILE_FLAGS = -DDEBUG -g $(SAN_FLAGS)
-INCLUDES = -I$(SRC_DIR)/
-LINK_FLAGS = -g -lreadline
+INCLUDES = \
+	-I$(SRC_DIR) \
+	-I$(GTEST_DIR)/include
+LINK_FLAGS = -g
 RLINK_FLAGS =
 DLINK_FLAGS = $(SAN_FLAGS)
 
-GTEST_DIR := third_party/googletest/googletest
-TEST_CXXFLAGS := -isystem $(GTEST_DIR)/include -pthread
+TEST_CXXFLAGS := -isystem -pthread
 TEST_LDFLAGS := -lpthread
 TEST_NAME := unittests
 
@@ -53,13 +55,15 @@ EXE_SOURCES := \
 EXE_SOURCES := $(addprefix $(SRC_DIR)/, $(EXE_SOURCES))
 EXE_OBJS = $(EXE_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
 
-COMMON_SOURCES :=
+COMMON_SOURCES := \
+	base/buffer.cc
 
 COMMON_SOURCES := $(addprefix $(SRC_DIR)/, $(COMMON_SOURCES))
 COMMON_OBJS = $(COMMON_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
 
 # All test sources must be suffixed with _test
 TEST_SOURCES := \
+	base/buffer_test.cc \
 	main_test.cc
 
 TEST_SOURCES := $(addprefix $(SRC_DIR)/, $(TEST_SOURCES))
@@ -93,7 +97,7 @@ clean:
 
 $(GTEST_LIB): $(GTEST_DIR)/src/gtest-all.cc
 	@mkdir -p $(GTEST_OUT)
-	$(CXX) $(TEST_CXXFLAGS) -I$(GTEST_DIR) \
+	$(CXX) $(TEST_CXXFLAGS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include \
 		-c $(GTEST_DIR)/src/gtest-all.cc -o $(GTEST_OUT)/gtest-all.o
 	ar -rv $(GTEST_LIB) $(GTEST_OUT)/gtest-all.o
 
@@ -128,6 +132,7 @@ ALL_SRC_FILES := \
 .PHONY: lint
 lint:
 	@./third_party/styleguide/cpplint/cpplint.py --verbose=0 \
+		--filter=-legal/copyright,-build/header_guard \
 		--root=$(SRC_DIR) $(ALL_SRC_FILES)
 
 .PHONY: format
