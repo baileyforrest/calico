@@ -1,8 +1,12 @@
+#pragma once
+
 #include <chrono>
 #include <condition_variable>
+#include <deque>
 #include <mutex>
 #include <queue>
 #include <thread>
+#include <utility>
 
 #include "base/macros.h"
 

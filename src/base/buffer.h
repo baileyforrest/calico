@@ -52,6 +52,8 @@ class Buffer {
   Buffer(Buffer&& other);
   ~Buffer();
 
+  void operator=(Buffer&& other);
+
   iterator begin();
   iterator end() { return iterator(this, nullptr, 0); }
   bool empty() const { return head_ == nullptr; }

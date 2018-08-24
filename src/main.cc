@@ -1,20 +1,20 @@
-#include <err.h>
-#include <cstdlib>
-#include <iostream>
+#include <unistd.h>
 
-#include "base/buffer.h"
+#include <cstdlib>
+#include <functional>
+
+#include "screen.h"  // NOLINT(build/include)
+#include "window/file_window.h"
 
 int main(int argc, char** argv) {
   if (argc < 2) {
-    std::cout << "Missing file\n";
     return EXIT_FAILURE;
   }
-
-  Buffer buf = Buffer::FromFile(argv[1]);
-  if (buf.empty()) {
-    std::cout << "Failed to read file\n";
-    return EXIT_FAILURE;
-  }
+  Screen s;
+  FileWindow window(argv[1]);
+  window.NotifySize(s.rows(), s.cols());
+  window.Render(s.render_cb());
+  s.Refresh();
 
   return EXIT_SUCCESS;
 }

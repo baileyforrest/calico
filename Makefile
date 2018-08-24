@@ -11,13 +11,20 @@ SAN_FLAGS := \
 BIN_NAME := calico
 SRC_EXT = cc
 SRC_DIR = src
-COMPILE_FLAGS = -g -std=c++14 -Wall -Wextra -Werror -Wno-unused-parameter
+COMPILE_FLAGS = \
+	-g \
+	-std=c++14 \
+	$(shell ncursesw5-config --cflags) \
+	-Wall \
+	-Wextra \
+	-Werror \
+	-Wno-unused-parameter
 RCOMPILE_FLAGS = -DNDEBUG -O3
 DCOMPILE_FLAGS = -DDEBUG -g $(SAN_FLAGS)
 INCLUDES = \
 	-I$(SRC_DIR) \
 	-I$(GTEST_DIR)/include
-LINK_FLAGS = -g
+LINK_FLAGS = -g $(shell ncursesw5-config --libs)
 RLINK_FLAGS =
 DLINK_FLAGS = $(SAN_FLAGS)
 
@@ -58,6 +65,8 @@ EXE_OBJS = $(EXE_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
 COMMON_SOURCES := \
 	base/buffer.cc \
 	base/task_runner.cc \
+	screen.cc \
+	window/file_window.cc
 
 COMMON_SOURCES := $(addprefix $(SRC_DIR)/, $(COMMON_SOURCES))
 COMMON_OBJS = $(COMMON_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
@@ -133,7 +142,7 @@ ALL_SRC_FILES := \
 .PHONY: lint
 lint:
 	@./third_party/styleguide/cpplint/cpplint.py --verbose=0 \
-		--filter=-legal/copyright,-build/header_guard \
+		--filter=-legal/copyright,-build/header_guard,-build/c++11 \
 		--root=$(SRC_DIR) $(ALL_SRC_FILES)
 
 .PHONY: format

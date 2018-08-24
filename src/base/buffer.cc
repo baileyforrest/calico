@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <utility>
 
 #include "base/buffer.h"
 
@@ -139,9 +140,8 @@ Buffer Buffer::FromFile(const std::string& path) {
 }
 
 Buffer::Buffer() = default;
-Buffer::Buffer(Buffer&& other) : head_(other.head_), tail_(other.tail_) {
-  other.head_ = nullptr;
-  other.tail_ = nullptr;
+Buffer::Buffer(Buffer&& other) {
+  *this = std::move(other);
 }
 
 Buffer::~Buffer() {
@@ -150,6 +150,13 @@ Buffer::~Buffer() {
     node = cur->next;
     delete cur;
   }
+}
+
+void Buffer::operator=(Buffer&& other) {
+  head_ = other.head_;
+  tail_ = other.tail_;
+  other.head_ = nullptr;
+  other.tail_ = nullptr;
 }
 
 Buffer::iterator Buffer::begin() {

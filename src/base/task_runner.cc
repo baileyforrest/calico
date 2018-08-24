@@ -1,9 +1,9 @@
-#include "task_runner.h"
+#include "base/task_runner.h"
 
 #include <cassert>
 
 TaskRunner::TaskRunner() {
-  thread_ = std::thread([this] { RunLoop(); });
+  thread_ = std::thread([this] { RunLoop(); });  // NOLINT(whitespace/newline)
 }
 
 TaskRunner::~TaskRunner() {
@@ -36,8 +36,9 @@ void TaskRunner::PostDelayedTask(Closure f, const Duration& delay) {
 
 void TaskRunner::WaitUntilIdle() {
   std::unique_lock<std::mutex> lock(mutex_);
-  is_idle_cv_.wait(lock,
-                   [this] { return tasks_.empty() && delayed_tasks_.empty(); });
+  is_idle_cv_.wait(lock, [this] {
+    return tasks_.empty() && delayed_tasks_.empty();
+  });  // NOLINT(whitespace/newline)
 }
 
 void TaskRunner::RunLoop() {
@@ -62,7 +63,7 @@ void TaskRunner::RunLoop() {
       } else {
         has_task_cv_.wait_until(lock, delayed_tasks_.front().first);
       }
-    };
+    }
 
     Closure f;
     if (!tasks_.empty()) {
