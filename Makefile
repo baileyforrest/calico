@@ -56,7 +56,8 @@ EXE_SOURCES := $(addprefix $(SRC_DIR)/, $(EXE_SOURCES))
 EXE_OBJS = $(EXE_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
 
 COMMON_SOURCES := \
-	base/buffer.cc
+	base/buffer.cc \
+	base/task_runner.cc \
 
 COMMON_SOURCES := $(addprefix $(SRC_DIR)/, $(COMMON_SOURCES))
 COMMON_OBJS = $(COMMON_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
