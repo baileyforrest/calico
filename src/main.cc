@@ -1,20 +1,16 @@
-#include <unistd.h>
-
 #include <cstdlib>
-#include <functional>
+#include <memory>
 
-#include "screen.h"  // NOLINT(build/include)
-#include "window/file_window.h"
+#include "controller.h"  // NOLINT(build/include)
 
 int main(int argc, char** argv) {
   if (argc < 2) {
     return EXIT_FAILURE;
   }
-  Screen s;
-  FileWindow window(argv[1]);
-  window.NotifySize(s.rows(), s.cols());
-  window.Render(s.render_cb());
-  s.Refresh();
+  Controller controller;
+  auto window = std::make_unique<FileWindow>(argv[1]);
+  controller.AddWindow(std::move(window));
+  controller.Run();
 
   return EXIT_SUCCESS;
 }

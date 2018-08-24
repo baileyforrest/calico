@@ -20,7 +20,6 @@ Screen::Screen() : render_cb_(std::bind(&Screen::SetChar, this, _1, _2, _3)) {
 }
 
 Screen::~Screen() {
-  getch();
   endwin();
 }
 

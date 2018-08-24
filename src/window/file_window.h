@@ -12,6 +12,7 @@ class FileWindow : public Window {
 
   // Window implementation:
   void NotifySize(int rows, int cols) override;
+  bool NotifyKey(int key) override;
   void Render(
       const std::function<void(int row, int col, wchar_t val)>& cb) override;
 

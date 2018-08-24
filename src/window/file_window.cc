@@ -12,6 +12,11 @@ void FileWindow::NotifySize(int rows, int cols) {
   cols_ = cols;
 }
 
+bool FileWindow::NotifyKey(int key) {
+  buf_.insert(buf_.end(), key);
+  return true;
+}
+
 void FileWindow::Render(
     const std::function<void(int row, int col, wchar_t val)>& cb) {
   int row = 0;

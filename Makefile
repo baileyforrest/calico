@@ -65,6 +65,7 @@ EXE_OBJS = $(EXE_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
 COMMON_SOURCES := \
 	base/buffer.cc \
 	base/task_runner.cc \
+	controller.cc \
 	screen.cc \
 	window/file_window.cc
 
