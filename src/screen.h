@@ -7,7 +7,9 @@ class Screen {
   Screen();
   ~Screen();
 
+  void Clear();
   void SetChar(int row, int col, wchar_t val);
+  void SetCursorPos(int row, int col);
   void Refresh();
 
   int rows() const { return rows_; }

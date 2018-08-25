@@ -29,6 +29,7 @@ class Buffer {
                        > {
    public:
     iterator(Buffer* buf, Node* node, int16_t offset);
+    iterator(const iterator& it) = default;
     ~iterator() = default;
     iterator& operator++();
     iterator& operator--();
@@ -37,6 +38,9 @@ class Buffer {
     }
     bool operator!=(iterator other) const { return !(*this == other); }
     reference operator*() const { return node_->buf[offset_]; }
+
+    iterator LastLineStart(bool ignore_current_pos) const;
+    iterator NextLineStart() const;
 
    private:
     friend class Buffer;

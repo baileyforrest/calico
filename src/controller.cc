@@ -21,6 +21,8 @@ void Controller::Run() {
     window->NotifySize(screen_.rows(), screen_.cols());
     window->Render(screen_.render_cb());
   }
+  auto pos = active_window_->GetCursorPos();
+  screen_.SetCursorPos(pos.first, pos.second);
   screen_.Refresh();
 
   while (true) {
@@ -31,10 +33,12 @@ void Controller::Run() {
       continue;
     }
 
-    if (active_window_->NotifyKey(ch)) {
-      active_window_->Render(screen_.render_cb());
-      screen_.Refresh();
-    }
+    active_window_->NotifyKey(ch);
+    screen_.Clear();
+    active_window_->Render(screen_.render_cb());
+    auto pos = active_window_->GetCursorPos();
+    screen_.SetCursorPos(pos.first, pos.second);
+    screen_.Refresh();
 
     // TODO(bcf): Handle better exit case.
     if (ch == 'z') {

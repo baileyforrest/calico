@@ -98,6 +98,48 @@ Buffer::iterator& Buffer::iterator::operator--() {
   return *this;
 }
 
+Buffer::iterator Buffer::iterator::LastLineStart(bool ignore_current_pos) const {
+  if (*this == buf_->begin()) {
+    return *this;
+  }
+  iterator it = *this;
+  if (ignore_current_pos) {
+    --it;
+  }
+  // Special case: Empty line
+  if (*it == '\n') {
+    return it;
+  }
+
+  // Find the next newline.
+  while (*it != '\n') {
+    if (it == buf_->begin()) {
+      return it;
+    }
+    --it;
+  }
+  ++it;
+
+  return it;
+}
+
+Buffer::iterator Buffer::iterator::NextLineStart() const {
+  if (*this == buf_->end()) {
+    return *this;
+  }
+  iterator it = *this;
+  while (it != buf_->end() && *it != '\n') {
+    ++it;
+  }
+
+  if (it != buf_->end()) {
+    ++it;
+  }
+
+  return it;
+}
+
+
 Buffer Buffer::FromFile(const std::string& path) {
   std::unique_ptr<FILE, decltype(&fclose)> file(fopen(path.c_str(), "r"),
                                                 &fclose);
@@ -207,6 +249,40 @@ Buffer::iterator Buffer::insert(iterator iter, wchar_t value) {
   if (node->gap_start == kNodeSize) {
     assert(node->gap_end == kNodeSize);
     Node* new_node = new Node;
+    // Special case: Adding to the beginning while full.
+    if (offset == 0) {
+      new_node->prev = node->prev;
+      new_node->next = node;
+      new_node->gap_start = 1;
+      new_node->gap_end = kNodeSize;
+      new_node->buf[0] = value;
+
+      if (node->prev) {
+        node->prev->next = new_node;
+      } else {
+        head_ = new_node;
+      }
+      node->prev = new_node;
+
+      return iterator(this, new_node, 0);
+    }
+
+    // Special case: Adding to the end while full.
+    if (offset == kNodeSize) {
+      new_node->prev = node;
+      new_node->next = node->next;
+      new_node->gap_start = 1;
+      new_node->gap_end = kNodeSize;
+      new_node->buf[0] = value;
+      if (node->next) {
+        node->next->prev = new_node;
+      } else {
+        tail_ = new_node;
+      }
+      node->next = new_node;
+      return iterator(this, new_node, 0);
+    }
+
     new_node->prev = node;
     new_node->next = node->next;
     new_node->gap_start = 0;
@@ -222,14 +298,6 @@ Buffer::iterator Buffer::insert(iterator iter, wchar_t value) {
     node->next = new_node;
     node->gap_start = offset;
     node->gap_end = kNodeSize;
-
-    // Special case: Adding to the end while full.
-    if (offset == kNodeSize) {
-      new_node->gap_start = 1;
-      new_node->gap_end = kNodeSize;
-      new_node->buf[0] = value;
-      return iterator(this, new_node, 0);
-    }
 
     node->buf[node->gap_start] = value;
     ++node->gap_start;

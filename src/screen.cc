@@ -15,6 +15,7 @@ Screen::Screen() : render_cb_(std::bind(&Screen::SetChar, this, _1, _2, _3)) {
   setlocale(LC_ALL, "");
   initscr();
   start_color();
+  curs_set(2);
   getmaxyx(stdscr, rows_, cols_);
   refresh();
 }
@@ -23,10 +24,20 @@ Screen::~Screen() {
   endwin();
 }
 
+void Screen::Clear() {
+  clear();
+}
+
 void Screen::SetChar(int row, int col, wchar_t val) {
   assert(row >= 0 && row < rows_);
   assert(col >= 0 && col < cols_);
   mvaddch(row, col, val);
+}
+
+void Screen::SetCursorPos(int row, int col) {
+  assert(row >= 0 && row < rows_);
+  assert(col >= 0 && col < cols_);
+  move(row, col);
 }
 
 void Screen::Refresh() {
