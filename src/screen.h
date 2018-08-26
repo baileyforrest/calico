@@ -8,6 +8,7 @@ class Screen {
   ~Screen();
 
   void Clear();
+  void RefreshSize();
   void SetChar(int row, int col, wchar_t val);
   void SetCursorPos(int row, int col);
   void Refresh();

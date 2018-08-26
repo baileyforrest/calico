@@ -19,8 +19,9 @@ Screen::Screen() : render_cb_(std::bind(&Screen::SetChar, this, _1, _2, _3)) {
   keypad(stdscr, true);
   start_color();
   curs_set(2);
-  getmaxyx(stdscr, rows_, cols_);
-  refresh();
+
+  RefreshSize();
+  Refresh();
 }
 
 Screen::~Screen() {
@@ -29,6 +30,10 @@ Screen::~Screen() {
 
 void Screen::Clear() {
   clear();
+}
+
+void Screen::RefreshSize() {
+  getmaxyx(stdscr, rows_, cols_);
 }
 
 void Screen::SetChar(int row, int col, wchar_t val) {

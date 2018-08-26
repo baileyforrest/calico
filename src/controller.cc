@@ -31,11 +31,12 @@ void Controller::Run() {
     // TODO(bcf): Refactor input to another class, handle non-blocking.
     int ch = getch();
     if (ch == KEY_RESIZE) {
-      // TODO(bcf): Handle window resize.
-      continue;
+      screen_.RefreshSize();
+      active_window_->NotifySize(screen_.rows(), screen_.cols());
+    } else {
+      active_window_->NotifyKey(ch);
     }
 
-    active_window_->NotifyKey(ch);
     screen_.Clear();
     active_window_->Render(screen_.render_cb());
     auto pos = active_window_->GetCursorPos();
