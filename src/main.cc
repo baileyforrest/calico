@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "controller.h"  // NOLINT(build/include)
+#include "window/file_window.h"
 
 int main(int argc, char** argv) {
   if (argc < 2) {

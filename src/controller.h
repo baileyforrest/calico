@@ -5,7 +5,8 @@
 
 #include "base/macros.h"
 #include "screen.h"  // NOLINT(build/include)
-#include "window/file_window.h"
+
+class Window;
 
 class Controller {
  public:

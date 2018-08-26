@@ -5,7 +5,7 @@
 #include <cassert>
 #include <utility>
 
-#include <iostream>
+#include "window/window.h"
 
 Controller::Controller() = default;
 Controller::~Controller() = default;

@@ -67,6 +67,7 @@ COMMON_SOURCES := \
 	base/task_runner.cc \
 	controller.cc \
 	screen.cc \
+	window/buffer_window.cc \
 	window/file_window.cc
 
 COMMON_SOURCES := $(addprefix $(SRC_DIR)/, $(COMMON_SOURCES))
