@@ -2,6 +2,7 @@
 
 #include <ncurses.h>
 
+#include <algorithm>
 #include <cassert>
 
 FileWindow::FileWindow(const std::string& filename)
@@ -80,6 +81,19 @@ void FileWindow::NotifyKey(int key) {
 
   cursor_pos_ = buf_.insert(cursor_pos_, key);
   ++cursor_pos_;
+
+  // Reposition cursor if current position won't fit on screen.
+  size_t line_start_diff;
+  cursor_pos_.LastLineStart(false /* ignore_current_pos */, &line_start_diff);
+
+  size_t line_end_diff;
+  cursor_pos_.NextLineStart(&line_end_diff);
+
+  size_t line_length = line_start_diff + line_end_diff;
+  int rows_used = (line_length + cols_ - 1) / cols_;
+  if (cursor_row_ + rows_used >= rows_) {
+    cursor_row_ = std::max(0, rows_ - 1 - rows_used);
+  }
 }
 
 void FileWindow::Render(
@@ -144,6 +158,8 @@ void FileWindow::Render(
 std::pair<int, int> FileWindow::GetCursorPos() {
   size_t diff;
   cursor_pos_.LastLineStart(false /* ignore_current_pos */, &diff);
-  int cursor_col = diff;
-  return {cursor_row_, cursor_col};
+  int cursor_col = diff % cols_;
+  int cursor_row = cursor_row_ + diff / cols_;
+  assert(cursor_row < rows_);
+  return {cursor_row, cursor_col};
 }
