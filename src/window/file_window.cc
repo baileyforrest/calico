@@ -2,10 +2,11 @@
 
 #include <ncurses.h>
 
+#include <cassert>
+
 FileWindow::FileWindow(const std::string& filename)
     : filename_(filename),
       buf_(Buffer::FromFile(filename)),
-      screen_start_(buf_.begin()),
       cursor_pos_(buf_.begin()) {}
 
 FileWindow::~FileWindow() = default;
@@ -27,7 +28,7 @@ void FileWindow::NotifyKey(int key) {
         ++cursor_pos_;
         return;
       }
-      ++current_col_;
+      ++cursor_col_;
       return;
     }
     case KEY_RIGHT: {
@@ -40,13 +41,25 @@ void FileWindow::NotifyKey(int key) {
         --cursor_pos_;
         return;
       }
-      --current_col_;
+      --cursor_col_;
       return;
     }
     case KEY_UP:
     case KEY_DOWN: {
-      cursor_pos_ = key == KEY_UP ? cursor_pos_.LastLineStart(true /* ignore_current_pos */) : cursor_pos_.NextLineStart();
-      for (int i = 0; i < current_col_; ++i) {
+      size_t diff;
+      if (key == KEY_UP) {
+        cursor_pos_ =
+            cursor_pos_.LastLineStart(true /* ignore_current_pos */, &diff);
+        if (diff > 0 && cursor_row_ >= 0) {
+          --cursor_row_;
+        }
+      } else {
+        cursor_pos_.NextLineStart(&diff);
+        if (diff > 0 && cursor_row_ < rows_) {
+          ++cursor_row_;
+        }
+      }
+      for (int i = 0; i < cursor_col_; ++i) {
         ++cursor_pos_;
         if (*cursor_pos_ == '\n') {
           --cursor_pos_;
@@ -61,46 +74,76 @@ void FileWindow::NotifyKey(int key) {
       }
       --cursor_pos_;
       cursor_pos_ = buf_.erase(cursor_pos_);
-      ++cursor_pos_;
+      return;
     }
   }
 
-  bool is_first_line = screen_start_ == cursor_pos_.LastLineStart(false /* ignore_current_pos */);
-
   cursor_pos_ = buf_.insert(cursor_pos_, key);
   ++cursor_pos_;
-
-  if (is_first_line) {
-    screen_start_ = cursor_pos_.LastLineStart(true /* ignore_current_pos */);
-  }
 }
 
 void FileWindow::Render(
     const std::function<void(int row, int col, wchar_t val)>& cb) {
-  int row = 0;
-  int col = 0;
+  auto cur_line_start =
+      cursor_pos_.LastLineStart(false /* ignore_current_pos */);
 
-  for (Buffer::iterator pos = screen_start_; pos != buf_.end() && row < rows_;
-       ++pos) {
-    if (pos == cursor_pos_) {
-      cursor_row_ = row;
-      cursor_col_ = col;
-    }
-    if (*pos == '\n') {
+  // Render cursor line and after.
+  int row = cursor_row_;
+  int col = 0;
+  for (auto it = cur_line_start; it != buf_.end() && row < rows_; ++it) {
+    if (*it == '\n') {
       col = 0;
       ++row;
       continue;
     }
 
-    cb(row, col, *pos);
+    cb(row, col, *it);
     ++col;
     if (col == cols_) {
       col = 0;
       ++row;
     }
   }
+
+  // Render lines before cursor.
+  row = cursor_row_;
+  size_t line_length;
+  for (auto line_start = cur_line_start.LastLineStart(
+           true /* ignore_current_pos*/, &line_length);
+       row >= 0; line_start = line_start.LastLineStart(
+                     true /* ignore_current_pos*/, &line_length)) {
+    // Done if there are no more lines left.
+    if (line_length == 0) {
+      break;
+    }
+
+    int rows_used = (line_length + cols_ - 1) / cols_;
+    int line_row = row - rows_used;
+
+    for (auto it = line_start;; ++it) {
+      assert(it != buf_.end());
+      // Done with the row.
+      if (*it == '\n') {
+        break;
+      }
+
+      if (line_row >= 0) {
+        cb(line_row, col, *it);
+      }
+      ++col;
+      if (col == cols_) {
+        col = 0;
+        ++line_row;
+      }
+    }
+
+    row -= rows_used;
+  }
 }
 
 std::pair<int, int> FileWindow::GetCursorPos() {
-  return {cursor_row_, cursor_col_};
+  size_t diff;
+  cursor_pos_.LastLineStart(false /* ignore_current_pos */, &diff);
+  int cursor_col = diff;
+  return {cursor_row_, cursor_col};
 }

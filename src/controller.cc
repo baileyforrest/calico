@@ -5,6 +5,8 @@
 #include <cassert>
 #include <utility>
 
+#include <iostream>
+
 Controller::Controller() = default;
 Controller::~Controller() = default;
 

@@ -98,47 +98,72 @@ Buffer::iterator& Buffer::iterator::operator--() {
   return *this;
 }
 
-Buffer::iterator Buffer::iterator::LastLineStart(bool ignore_current_pos) const {
+Buffer::iterator Buffer::iterator::LastLineStart(bool ignore_current_pos,
+                                                 size_t* pdiff) const {
+  size_t diff = 0;
   if (*this == buf_->begin()) {
+    if (pdiff) {
+      *pdiff = diff;
+    }
     return *this;
   }
   iterator it = *this;
   if (ignore_current_pos) {
     --it;
+    ++diff;
   }
   // Special case: Empty line
   if (*it == '\n') {
+    if (pdiff) {
+      *pdiff = diff;
+    }
     return it;
   }
 
   // Find the next newline.
   while (*it != '\n') {
     if (it == buf_->begin()) {
+      if (pdiff) {
+        *pdiff = diff;
+      }
       return it;
     }
     --it;
+    ++diff;
   }
   ++it;
+  --diff;
 
+  if (pdiff) {
+    *pdiff = diff;
+  }
   return it;
 }
 
-Buffer::iterator Buffer::iterator::NextLineStart() const {
+Buffer::iterator Buffer::iterator::NextLineStart(size_t* pdiff) const {
+  size_t diff = 0;
   if (*this == buf_->end()) {
+    if (pdiff) {
+      *pdiff = diff;
+    }
     return *this;
   }
   iterator it = *this;
   while (it != buf_->end() && *it != '\n') {
     ++it;
+    ++diff;
   }
 
   if (it != buf_->end()) {
     ++it;
+    ++diff;
   }
 
+  if (pdiff) {
+    *pdiff = diff;
+  }
   return it;
 }
-
 
 Buffer Buffer::FromFile(const std::string& path) {
   std::unique_ptr<FILE, decltype(&fclose)> file(fopen(path.c_str(), "r"),
@@ -245,8 +270,9 @@ Buffer::iterator Buffer::insert(iterator iter, wchar_t value) {
   assert(offset <= kNodeSize);
   assert(offset < node->gap_start || offset >= node->gap_end);
 
-  // Current buffer is full.
-  if (node->gap_start == kNodeSize) {
+  // Current buffer is full and so is the last one.
+  if (node->gap_start == kNodeSize &&
+      (!node->prev || node->prev->gap_start == kNodeSize)) {
     assert(node->gap_end == kNodeSize);
     Node* new_node = new Node;
     // Special case: Adding to the beginning while full.
@@ -302,6 +328,13 @@ Buffer::iterator Buffer::insert(iterator iter, wchar_t value) {
     node->buf[node->gap_start] = value;
     ++node->gap_start;
     return iterator(this, node, offset);
+  }
+
+  // Current node is full, but last one is not.
+  if (node->gap_start == kNodeSize) {
+    assert(node->prev && node->prev->gap_start != kNodeSize);
+    node = node->prev;
+    offset = kNodeSize;
   }
 
   if (offset < node->gap_start) {  // Case 1: Inserting before the gap
@@ -382,8 +415,8 @@ Buffer::iterator Buffer::erase(iterator iter) {
   if (node->gap_end == kNodeSize) {
     next_node = node->next;
     next_offset = 0;
-    if (node && node->gap_start == next_offset) {
-      next_offset = node->gap_end;
+    if (next_node && next_node->gap_start == next_offset) {
+      next_offset = next_node->gap_end;
       assert(next_offset <= kNodeSize);
     }
 

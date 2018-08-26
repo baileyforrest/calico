@@ -30,6 +30,7 @@
 
 import os
 import ycm_core
+import subprocess
 
 # These are the compilation flags that will be used in case there's no
 # compilation database set (by default, one is not set).
@@ -49,6 +50,8 @@ flags = [
   'third_party/googletest/googletest/include',
   '-pthread',
 ]
+
+flags += subprocess.check_output(['ncursesw5-config', '--cflags']).split('\n')
 
 
 # Set this to the absolute path to the folder (NOT the file!) containing the

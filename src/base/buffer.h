@@ -39,8 +39,9 @@ class Buffer {
     bool operator!=(iterator other) const { return !(*this == other); }
     reference operator*() const { return node_->buf[offset_]; }
 
-    iterator LastLineStart(bool ignore_current_pos) const;
-    iterator NextLineStart() const;
+    iterator LastLineStart(bool ignore_current_pos,
+                           size_t* diff = nullptr) const;
+    iterator NextLineStart(size_t* diff = nullptr) const;
 
    private:
     friend class Buffer;
