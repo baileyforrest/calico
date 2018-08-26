@@ -29,11 +29,11 @@ void FileWindow::NotifyKey(int key) {
         ++cursor_pos_;
         return;
       }
-      ++cursor_col_;
+      --cursor_col_;
       return;
     }
     case KEY_RIGHT: {
-      if (cursor_pos_ == buf_.end()) {
+      if (cursor_pos_ == buf_.end() || *cursor_pos_ == '\n') {
         return;
       }
       ++cursor_pos_;
@@ -42,15 +42,17 @@ void FileWindow::NotifyKey(int key) {
         --cursor_pos_;
         return;
       }
-      --cursor_col_;
+      ++cursor_col_;
       return;
     }
     case KEY_UP:
     case KEY_DOWN: {
       size_t diff;
       if (key == KEY_UP) {
+        auto cur_start =
+            cursor_pos_.LastLineStart(false /* ignore_current_pos */);
         cursor_pos_ =
-            cursor_pos_.LastLineStart(true /* ignore_current_pos */, &diff);
+            cur_start.LastLineStart(true /* ignore_current_pos */, &diff);
         if (diff > 0 && cursor_row_ >= 0) {
           --cursor_row_;
         }
@@ -64,6 +66,12 @@ void FileWindow::NotifyKey(int key) {
         if (diff > 0 && cursor_row_ < rows_) {
           ++cursor_row_;
         }
+      }
+
+      // Move cursor to the desired column
+      // Do nothing if it's an empty line.
+      if (*cursor_pos_ == '\n') {
+        return;
       }
       for (int i = 0; i < cursor_col_; ++i) {
         ++cursor_pos_;
