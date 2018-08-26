@@ -270,9 +270,14 @@ Buffer::iterator Buffer::insert(iterator iter, wchar_t value) {
   assert(offset <= kNodeSize);
   assert(offset < node->gap_start || offset >= node->gap_end);
 
-  // Current buffer is full and so is the last one.
-  if (node->gap_start == kNodeSize &&
-      (!node->prev || node->prev->gap_start == kNodeSize)) {
+  bool node_full = node->gap_start == kNodeSize;
+  if (node_full && offset == 0 && node->prev &&
+      node->prev->gap_start != kNodeSize) {
+    // If current buffer is full, but last one is not and we are adding to the
+    // beginning, add to last buffer instead.
+    node = node->prev;
+    offset = kNodeSize;
+  } else if (node_full) {
     assert(node->gap_end == kNodeSize);
     Node* new_node = new Node;
     // Special case: Adding to the beginning while full.
@@ -328,13 +333,6 @@ Buffer::iterator Buffer::insert(iterator iter, wchar_t value) {
     node->buf[node->gap_start] = value;
     ++node->gap_start;
     return iterator(this, node, offset);
-  }
-
-  // Current node is full, but last one is not.
-  if (node->gap_start == kNodeSize) {
-    assert(node->prev && node->prev->gap_start != kNodeSize);
-    node = node->prev;
-    offset = kNodeSize;
   }
 
   if (offset < node->gap_start) {  // Case 1: Inserting before the gap
