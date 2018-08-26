@@ -55,7 +55,12 @@ void FileWindow::NotifyKey(int key) {
           --cursor_row_;
         }
       } else {
-        cursor_pos_.NextLineStart(&diff);
+        auto next_start = cursor_pos_.NextLineStart(&diff);
+        if (next_start == buf_.end()) {
+          return;
+        }
+
+        cursor_pos_ = next_start;
         if (diff > 0 && cursor_row_ < rows_) {
           ++cursor_row_;
         }
@@ -120,19 +125,21 @@ void FileWindow::Render(
   }
 
   // Render lines before cursor.
-  row = cursor_row_;
-  size_t line_length;
-  for (auto line_start = cur_line_start.LastLineStart(
-           true /* ignore_current_pos*/, &line_length);
+  row = cursor_row_ - 1;
+  size_t diff;
+  for (auto line_start =
+           cur_line_start.LastLineStart(true /* ignore_current_pos*/, &diff);
        row >= 0; line_start = line_start.LastLineStart(
-                     true /* ignore_current_pos*/, &line_length)) {
+                     true /* ignore_current_pos*/, &diff)) {
     // Done if there are no more lines left.
-    if (line_length == 0) {
+    if (diff == 0) {
       break;
     }
+    int line_length = diff - 1;
 
-    int rows_used = (line_length + cols_ - 1) / cols_;
-    int line_row = row - rows_used;
+    int rows_used = std::max(1, (line_length + cols_ - 1) / cols_);
+    int line_row = row - (rows_used - 1);
+    int col = 0;
 
     for (auto it = line_start;; ++it) {
       assert(it != buf_.end());
@@ -142,6 +149,7 @@ void FileWindow::Render(
       }
 
       if (line_row >= 0) {
+        assert(line_row <= row);
         cb(line_row, col, *it);
       }
       ++col;

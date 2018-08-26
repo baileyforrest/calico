@@ -107,10 +107,23 @@ Buffer::iterator Buffer::iterator::LastLineStart(bool ignore_current_pos,
     }
     return *this;
   }
+
   iterator it = *this;
   if (ignore_current_pos) {
     --it;
     ++diff;
+
+    if (*it == '\n' && it != buf_->begin()) {
+      --it;
+      ++diff;
+    }
+
+    // Special case: If we have two newlines in a row, then the last second
+    // newline is the start of the line.
+    if (*it == '\n') {
+      ++it;
+      --diff;
+    }
   }
   // Special case: Empty line
   if (*it == '\n') {
