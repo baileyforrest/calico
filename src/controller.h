@@ -20,6 +20,8 @@ class Controller {
 
  private:
   void Render();
+  void RenderTabBar();
+  void RenderStatus();
 
   struct WindowInfo {
     explicit WindowInfo(std::unique_ptr<Window> in_window)
@@ -41,7 +43,7 @@ class Controller {
     TabInfo(TabInfo&&) = default;
 
     std::list<WindowInfo*> windows;  // Does not own.
-    WindowInfo* active_window_ = nullptr;
+    WindowInfo* active_window = nullptr;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TabInfo);

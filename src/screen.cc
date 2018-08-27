@@ -47,3 +47,11 @@ void Screen::SetCursorPos(int row, int col) {
 void Screen::Refresh() {
   refresh();
 }
+
+void Screen::EnableReverse() {
+  attron(A_REVERSE);
+}
+
+void Screen::DisableReverse() {
+  attroff(A_REVERSE);
+}

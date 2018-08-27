@@ -1,8 +1,10 @@
 #include "controller.h"  // NOLINT(build/include)
 
 #include <curses.h>
+#include <libgen.h>
 
 #include <cassert>
+#include <string>
 #include <utility>
 
 #include "window/window.h"
@@ -27,7 +29,7 @@ void Controller::AddWindow(std::unique_ptr<Window> window) {
   info.cols = screen_.cols();
 
   windows_.push_back(std::move(info));
-  active_tab_->active_window_ = &windows_.back();
+  active_tab_->active_window = &windows_.back();
   active_tab_->windows.push_back(&windows_.back());
 }
 
@@ -50,7 +52,7 @@ void Controller::Run() {
         }
       }
     } else {
-      active_tab_->active_window_->window->NotifyKey(ch);
+      active_tab_->active_window->window->NotifyKey(ch);
     }
 
     Render();
@@ -71,8 +73,11 @@ void Controller::Render() {
     window->window->Render(render_cb);
   }
 
+  RenderTabBar();
+  RenderStatus();
+
   // Render the cursor.
-  WindowInfo* active_window = active_tab_->active_window_;
+  WindowInfo* active_window = active_tab_->active_window;
   std::pair<int, int> cursor_pos = active_window->window->GetCursorPos();
   assert(cursor_pos.first >= 0 && cursor_pos.first <= active_window->rows);
   assert(cursor_pos.second >= 0 && cursor_pos.second <= active_window->cols);
@@ -81,3 +86,43 @@ void Controller::Render() {
 
   screen_.Refresh();
 }
+
+void Controller::RenderTabBar() {
+  int offset = 0;
+  for (TabInfo& tab : tabs_) {
+    size_t num_windows = tab.windows.size();
+    assert(num_windows > 0);
+
+    std::string active_name = tab.active_window->window->Name();
+    std::string tab_name =
+        std::to_string(num_windows) + " " + basename(&active_name[0]);
+
+    // We're done if tab won't fit on screen.
+    if (offset + static_cast<int>(tab_name.size()) + 2 >= screen_.rows()) {
+      break;
+    }
+
+    bool is_primary = active_tab_ == &tab;
+    if (!is_primary) {
+      screen_.EnableReverse();
+    }
+
+    screen_.SetChar(0 /* row */, offset++, ' ');
+    for (char c : tab_name) {
+      screen_.SetChar(0 /* row */, offset++, c);
+    }
+    screen_.SetChar(0 /* row */, offset++, ' ');
+    if (!is_primary) {
+      screen_.DisableReverse();
+    }
+  }
+
+  // Fill rest of bar with reversed blanks.
+  screen_.EnableReverse();
+  while (offset < screen_.cols()) {
+    screen_.SetChar(0 /* row */, offset++, ' ');
+  }
+  screen_.DisableReverse();
+}
+
+void Controller::RenderStatus() {}
