@@ -11,4 +11,6 @@ class CommandWindow : public BufferWindow {
 
   // Window implementation:
   std::string Name() override;
+
+  std::string LastCommnd();
 };

@@ -67,10 +67,6 @@ void Controller::Run() {
       }
       continue;
     }
-    // TODO(bcf): Handle better exit case.
-    if (wch == 'z') {
-      break;
-    }
 
     if (mode_ == Mode::INSERT && !is_key_code) {
       active_tab_->active_window->window->NotifyChar(wch);
@@ -79,6 +75,15 @@ void Controller::Run() {
 
     if (mode_ == Mode::COMMAND && !is_key_code) {
       command_window_.NotifyChar(wch);
+      if (wch == '\n') {
+        std::string last_command = command_window_.LastCommnd();
+        // TODO(bcf): Refactor to command handler when this gets big enough
+        if (last_command == "q") {
+          return;
+        }
+
+        mode_ = Mode::NORMAL;
+      }
       continue;
     }
 
@@ -107,7 +112,11 @@ void Controller::Run() {
         continue;
       }
       default:
-        active_tab_->active_window->window->NotifyAction(action);
+        if (mode_ == Mode::COMMAND) {
+          command_window_.NotifyAction(action);
+        } else {
+          active_tab_->active_window->window->NotifyAction(action);
+        }
     }
   }
 }
@@ -130,12 +139,18 @@ void Controller::Render() {
   RenderStatus();
 
   // Render the cursor.
-  WindowInfo* active_window = active_tab_->active_window;
-  std::pair<int, int> cursor_pos = active_window->window->GetCursorPos();
-  assert(cursor_pos.first >= 0 && cursor_pos.first <= active_window->rows);
-  assert(cursor_pos.second >= 0 && cursor_pos.second <= active_window->cols);
-  screen_.SetCursorPos(cursor_pos.first + active_window->row_off,
-                       cursor_pos.second + active_window->col_off);
+  if (mode_ == Mode::COMMAND) {
+    std::pair<int, int> cursor_pos = command_window_.GetCursorPos();
+    assert(cursor_pos.first == 0);
+    screen_.SetCursorPos(screen_.rows() - 1, cursor_pos.second + 1);
+  } else {
+    WindowInfo* active_window = active_tab_->active_window;
+    std::pair<int, int> cursor_pos = active_window->window->GetCursorPos();
+    assert(cursor_pos.first >= 0 && cursor_pos.first <= active_window->rows);
+    assert(cursor_pos.second >= 0 && cursor_pos.second <= active_window->cols);
+    screen_.SetCursorPos(cursor_pos.first + active_window->row_off,
+                         cursor_pos.second + active_window->col_off);
+  }
 
   screen_.Refresh();
 }
@@ -184,11 +199,12 @@ void Controller::RenderStatus() {
       return;
     }
     case Mode::COMMAND: {
-      command_window_.NotifySize(1 /* rows */, screen_.cols());
+      screen_.SetChars(screen_.rows() - 1, 0, ":");
+      command_window_.NotifySize(1 /* rows */, screen_.cols() - 1);
       auto render_cb = [this](int row, int col, wchar_t value) {
         assert(row == 0);
         assert(col >= 0 && col < screen_.cols());
-        screen_.SetChar(screen_.rows() - 1, col, value);
+        screen_.SetChar(screen_.rows() - 1, col + 1, value);
       };
       command_window_.Render(render_cb);
       return;
