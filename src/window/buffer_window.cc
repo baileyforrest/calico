@@ -1,8 +1,7 @@
 #include "window/buffer_window.h"
 
-#include <ncurses.h>
-
 #include <algorithm>
+#include <cctype>
 #include <cassert>
 
 BufferWindow::BufferWindow() : cursor_pos_(buf_.begin()) {}
@@ -14,9 +13,9 @@ void BufferWindow::NotifySize(int rows, int cols) {
   cols_ = cols;
 }
 
-void BufferWindow::NotifyKey(int key) {
-  switch (key) {
-    case KEY_LEFT: {
+void BufferWindow::NotifyAction(Action action) {
+  switch (action) {
+    case Action::LEFT: {
       if (cursor_pos_ == buf_.begin()) {
         return;
       }
@@ -29,7 +28,7 @@ void BufferWindow::NotifyKey(int key) {
       --cursor_col_;
       return;
     }
-    case KEY_RIGHT: {
+    case Action::RIGHT: {
       if (cursor_pos_ == buf_.end() || *cursor_pos_ == '\n') {
         return;
       }
@@ -41,10 +40,10 @@ void BufferWindow::NotifyKey(int key) {
       ++cursor_col_;
       return;
     }
-    case KEY_UP:
-    case KEY_DOWN: {
+    case Action::UP:
+    case Action::DOWN: {
       size_t diff;
-      if (key == KEY_UP) {
+      if (action == Action::UP) {
         auto cur_start =
             cursor_pos_.LastLineStart(false /* ignore_current_pos */);
         cursor_pos_ =
@@ -78,7 +77,7 @@ void BufferWindow::NotifyKey(int key) {
       }
       return;
     }
-    case KEY_BACKSPACE: {
+    case Action::BACKSPACE: {
       if (cursor_pos_ == buf_.begin()) {
         return;
       }
@@ -87,11 +86,11 @@ void BufferWindow::NotifyKey(int key) {
       return;
     }
 
-    case KEY_HOME: {
+    case Action::HOME: {
       cursor_pos_ = cursor_pos_.LastLineStart(false /* ignore_current_pos */);
       return;
     }
-    case KEY_END: {
+    case Action::END: {
       size_t diff;
       cursor_pos_ = cursor_pos_.NextLineStart(&diff);
       if (diff > 0) {
@@ -99,8 +98,12 @@ void BufferWindow::NotifyKey(int key) {
       }
       return;
     }
+    default:
+      break;
   }
+}
 
+void BufferWindow::NotifyChar(wchar_t key) {
   // Default case, just insert the key.
   cursor_pos_ = buf_.insert(cursor_pos_, key);
   ++cursor_pos_;

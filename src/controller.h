@@ -5,7 +5,8 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "screen.h"  // NOLINT(build/include)
+#include "key_config.h"  // NOLINT(build/include)
+#include "screen.h"      // NOLINT(build/include)
 
 class Window;
 
@@ -19,9 +20,10 @@ class Controller {
   void Run();
 
  private:
-  void Render();
-  void RenderTabBar();
-  void RenderStatus();
+  enum class Mode {
+    NORMAL,
+    INSERT,
+  };
 
   struct WindowInfo {
     explicit WindowInfo(std::unique_ptr<Window> in_window)
@@ -49,7 +51,14 @@ class Controller {
     DISALLOW_COPY_AND_ASSIGN(TabInfo);
   };
 
+  void Render();
+  void RenderTabBar();
+  void RenderStatus();
+
+  KeyConfig key_config_;
   Screen screen_;
+
+  Mode mode_ = Mode::NORMAL;
   std::list<TabInfo> tabs_;
   std::list<WindowInfo> windows_;
   TabInfo* active_tab_ = nullptr;

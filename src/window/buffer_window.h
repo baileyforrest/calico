@@ -14,7 +14,8 @@ class BufferWindow : public Window {
   // Window implementation:
   std::string Name() override = 0;
   void NotifySize(int rows, int cols) override;
-  void NotifyKey(int key) override;
+  void NotifyAction(Action action) override;
+  void NotifyChar(wchar_t key) override;
   void Render(
       const std::function<void(int row, int col, wchar_t val)>& cb) override;
   std::pair<int, int> GetCursorPos() override;

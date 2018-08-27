@@ -66,6 +66,7 @@ COMMON_SOURCES := \
 	base/buffer.cc \
 	base/task_runner.cc \
 	controller.cc \
+	key_config.cc \
 	screen.cc \
 	window/buffer_window.cc \
 	window/file_window.cc

@@ -37,23 +37,39 @@ void Controller::Run() {
   Render();
   while (true) {
     // TODO(bcf): Refactor input to another class, handle non-blocking.
-    int ch = getch();
+    wint_t wch = 0;
+    int res = get_wch(&wch);
+    switch (res) {
+      case ERR:
+        continue;
+      case KEY_CODE_YES: {
+        Action action = key_config_.GetAction(wch);
+        if (action == Action::NONE) {
+          continue;
+        }
+        if (wch == KEY_RESIZE) {
+          screen_.RefreshSize();
+          for (TabInfo& tab : tabs_) {
+            for (WindowInfo* window : tab.windows) {
+              window->rows = screen_.rows() - 2;
+              window->cols = screen_.cols();
+            }
+          }
+          break;
+        }
+        active_tab_->active_window->window->NotifyAction(action);
+        break;
+      }
+      case OK:
+        active_tab_->active_window->window->NotifyChar(wch);
+        break;
+    }
     // TODO(bcf): Handle better exit case.
-    if (ch == 'z') {
+    if (wch == 'z') {
       break;
     }
-
-    if (ch == KEY_RESIZE) {
-      screen_.RefreshSize();
-      for (TabInfo& tab : tabs_) {
-        for (WindowInfo* window : tab.windows) {
-          window->rows = screen_.rows() - 2;
-          window->cols = screen_.cols();
-        }
-      }
-    } else {
-      active_tab_->active_window->window->NotifyKey(ch);
-    }
+    // TODO(bcf): Use mode.
+    (void)mode_;
 
     Render();
   }
