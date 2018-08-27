@@ -69,6 +69,7 @@ COMMON_SOURCES := \
 	key_config.cc \
 	screen.cc \
 	window/buffer_window.cc \
+	window/command_window.cc \
 	window/file_window.cc
 
 COMMON_SOURCES := $(addprefix $(SRC_DIR)/, $(COMMON_SOURCES))

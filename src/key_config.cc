@@ -2,6 +2,8 @@
 
 #include <ncurses.h>
 
+#include "key.h"  // NOLINT(build/include)
+
 namespace {
 
 // clang-format off
@@ -16,6 +18,17 @@ const struct {
   {KEY_HOME, Action::HOME},
   {KEY_END, Action::END},
   {KEY_BACKSPACE, Action::BACKSPACE},
+  {static_cast<wint_t>(Key::ESCAPE), Action::ESCAPE},
+
+  {':', Action::START_COMMAND_MODE},
+  {'i', Action::START_INSERT_MODE},
+
+  {'k', Action::UP},
+  {'j', Action::DOWN},
+  {'h', Action::LEFT},
+  {'l', Action::RIGHT},
+  {'$', Action::END},
+  {'0', Action::HOME},
 };
 // clang-format on
 

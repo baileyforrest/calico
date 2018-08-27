@@ -4,11 +4,11 @@
 #include <memory>
 #include <utility>
 
+#include "action.h"  // NOLINT(build/include)
 #include "base/macros.h"
 #include "key_config.h"  // NOLINT(build/include)
 #include "screen.h"      // NOLINT(build/include)
-
-class Window;
+#include "window/command_window.h"
 
 class Controller {
  public:
@@ -21,7 +21,9 @@ class Controller {
 
  private:
   enum class Mode {
+    NONE,
     NORMAL,
+    COMMAND,
     INSERT,
   };
 
@@ -57,6 +59,7 @@ class Controller {
 
   KeyConfig key_config_;
   Screen screen_;
+  CommandWindow command_window_;
 
   Mode mode_ = Mode::NORMAL;
   std::list<TabInfo> tabs_;

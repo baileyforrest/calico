@@ -38,6 +38,12 @@ void Screen::SetChar(int row, int col, wchar_t val) {
   mvaddch(row, col, val);
 }
 
+void Screen::SetChars(int row, int col, const std::string& str) {
+  for (char c : str) {
+    SetChar(row, col++, c);
+  }
+}
+
 void Screen::SetCursorPos(int row, int col) {
   assert(row >= 0 && row < rows_);
   assert(col >= 0 && col < cols_);
@@ -54,4 +60,12 @@ void Screen::EnableReverse() {
 
 void Screen::DisableReverse() {
   attroff(A_REVERSE);
+}
+
+void Screen::EnableBold() {
+  attron(A_BOLD);
+}
+
+void Screen::DisableBold() {
+  attroff(A_BOLD);
 }

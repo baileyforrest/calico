@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "key.h"  // NOLINT(build/include)
 #include "window/window.h"
 
 Controller::Controller() {
@@ -34,44 +35,80 @@ void Controller::AddWindow(std::unique_ptr<Window> window) {
 }
 
 void Controller::Run() {
-  Render();
   while (true) {
+    Render();
     // TODO(bcf): Refactor input to another class, handle non-blocking.
     wint_t wch = 0;
     int res = get_wch(&wch);
+    bool is_key_code = false;
+
     switch (res) {
-      case ERR:
-        continue;
-      case KEY_CODE_YES: {
-        Action action = key_config_.GetAction(wch);
-        if (action == Action::NONE) {
-          continue;
-        }
-        if (wch == KEY_RESIZE) {
-          screen_.RefreshSize();
-          for (TabInfo& tab : tabs_) {
-            for (WindowInfo* window : tab.windows) {
-              window->rows = screen_.rows() - 2;
-              window->cols = screen_.cols();
-            }
-          }
-          break;
-        }
-        active_tab_->active_window->window->NotifyAction(action);
+      case KEY_CODE_YES:
+        is_key_code = true;
         break;
-      }
       case OK:
-        active_tab_->active_window->window->NotifyChar(wch);
         break;
+      default:
+        continue;
+    }
+
+    // TODO(bcf): Handle ctrl + alt key combos which are considered escape.
+    if (wch == static_cast<wchar_t>(Key::ESCAPE)) {
+      is_key_code = true;
+    }
+
+    if (is_key_code && wch == KEY_RESIZE) {
+      screen_.RefreshSize();
+      for (TabInfo& tab : tabs_) {
+        for (WindowInfo* window : tab.windows) {
+          window->rows = screen_.rows() - 2;
+          window->cols = screen_.cols();
+        }
+      }
+      continue;
     }
     // TODO(bcf): Handle better exit case.
     if (wch == 'z') {
       break;
     }
-    // TODO(bcf): Use mode.
-    (void)mode_;
 
-    Render();
+    if (mode_ == Mode::INSERT && !is_key_code) {
+      active_tab_->active_window->window->NotifyChar(wch);
+      continue;
+    }
+
+    if (mode_ == Mode::COMMAND && !is_key_code) {
+      command_window_.NotifyChar(wch);
+      continue;
+    }
+
+    Action action = key_config_.GetAction(wch);
+    if (action == Action::NONE) {
+      continue;
+    }
+
+    switch (action) {
+      case Action::START_COMMAND_MODE: {
+        mode_ = Mode::COMMAND;
+        continue;
+      }
+      case Action::START_INSERT_MODE: {
+        mode_ = Mode::INSERT;
+        continue;
+      }
+      case Action::ESCAPE: {
+        switch (mode_) {
+          case Mode::COMMAND:
+          case Mode::INSERT:
+            mode_ = Mode::NORMAL;
+          default:
+            break;
+        }
+        continue;
+      }
+      default:
+        active_tab_->active_window->window->NotifyAction(action);
+    }
   }
 }
 
@@ -110,11 +147,11 @@ void Controller::RenderTabBar() {
     assert(num_windows > 0);
 
     std::string active_name = tab.active_window->window->Name();
-    std::string tab_name =
-        std::to_string(num_windows) + " " + basename(&active_name[0]);
+    std::string tab_name = " " + std::to_string(num_windows) + " " +
+                           basename(&active_name[0]) + " ";
 
     // We're done if tab won't fit on screen.
-    if (offset + static_cast<int>(tab_name.size()) + 2 >= screen_.rows()) {
+    if (offset + static_cast<int>(tab_name.size()) >= screen_.rows()) {
       break;
     }
 
@@ -122,15 +159,11 @@ void Controller::RenderTabBar() {
     if (!is_primary) {
       screen_.EnableReverse();
     }
-
-    screen_.SetChar(0 /* row */, offset++, ' ');
-    for (char c : tab_name) {
-      screen_.SetChar(0 /* row */, offset++, c);
-    }
-    screen_.SetChar(0 /* row */, offset++, ' ');
+    screen_.SetChars(0 /* row */, offset, tab_name);
     if (!is_primary) {
       screen_.DisableReverse();
     }
+    offset += tab_name.size();
   }
 
   // Fill rest of bar with reversed blanks.
@@ -141,4 +174,30 @@ void Controller::RenderTabBar() {
   screen_.DisableReverse();
 }
 
-void Controller::RenderStatus() {}
+void Controller::RenderStatus() {
+  switch (mode_) {
+    case Mode::NONE: {
+      assert(false);
+      return;
+    }
+    case Mode::NORMAL: {
+      return;
+    }
+    case Mode::COMMAND: {
+      command_window_.NotifySize(1 /* rows */, screen_.cols());
+      auto render_cb = [this](int row, int col, wchar_t value) {
+        assert(row == 0);
+        assert(col >= 0 && col < screen_.cols());
+        screen_.SetChar(screen_.rows() - 1, col, value);
+      };
+      command_window_.Render(render_cb);
+      return;
+    }
+    case Mode::INSERT: {
+      screen_.EnableBold();
+      screen_.SetChars(screen_.rows() - 1, 0, "-- INSERT --");
+      screen_.DisableBold();
+      return;
+    }
+  }
+}
