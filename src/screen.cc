@@ -1,11 +1,19 @@
 #include "screen.h"  // NOLINT(build/include)
 
 #include <locale.h>
-#include <curses.h>
+#include <ncurses.h>
 
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+
+#include "key.h"  // NOLINT(build/include)
+
+namespace {
+
+constexpr int kEscapeDelayMs = 25;
+
+}  // namespace
 
 Screen::Screen() {
   setlocale(LC_ALL, "");
@@ -15,6 +23,7 @@ Screen::Screen() {
   keypad(stdscr, true);
   start_color();
   curs_set(2);
+  set_escdelay(kEscapeDelayMs);
 
   RefreshSize();
   Refresh();
@@ -24,12 +33,16 @@ Screen::~Screen() {
   endwin();
 }
 
-void Screen::Clear() {
-  clear();
+void Screen::AddObserver(Observer* o) {
+  observers_.insert(o);
 }
 
-void Screen::RefreshSize() {
-  getmaxyx(stdscr, rows_, cols_);
+void Screen::RemoveObserver(Observer* o) {
+  observers_.erase(o);
+}
+
+void Screen::Clear() {
+  clear();
 }
 
 void Screen::SetChar(int row, int col, wchar_t val) {
@@ -68,4 +81,50 @@ void Screen::EnableBold() {
 
 void Screen::DisableBold() {
   attroff(A_BOLD);
+}
+
+Screen::KeyState Screen::ReadKey() {
+  while (true) {
+    KeyState result;
+
+    int res = get_wch(&result.code);
+    switch (res) {
+      case KEY_CODE_YES:
+        result.is_key_code = true;
+        break;
+      case OK:
+        break;
+      default:
+        continue;
+    }
+
+    if (result.is_key_code && result.code == KEY_RESIZE) {
+      RefreshSize();
+      for (auto* obs : observers_) {
+        obs->OnScreenSizeChanged();
+      }
+      continue;
+    }
+
+    if (result.code == static_cast<wchar_t>(Key::ESCAPE)) {
+      result.is_key_code = true;
+
+      nodelay(stdscr, true);
+      wint_t wch;
+      res = get_wch(&wch);
+      nodelay(stdscr, false);
+
+      // If another key is available, then assume it is alt + key
+      if (res != ERR) {
+        result.code = wch;
+        result.alt = true;
+      }
+    }
+
+    return result;
+  }
+}
+
+void Screen::RefreshSize() {
+  getmaxyx(stdscr, rows_, cols_);
 }

@@ -1,6 +1,5 @@
 #include "controller.h"  // NOLINT(build/include)
 
-#include <curses.h>
 #include <libgen.h>
 
 #include <cassert>
@@ -13,9 +12,12 @@
 Controller::Controller() {
   tabs_.push_back(TabInfo());
   active_tab_ = &tabs_.front();
+  screen_.AddObserver(this);
 }
 
-Controller::~Controller() = default;
+Controller::~Controller() {
+  screen_.RemoveObserver(this);
+}
 
 void Controller::AddWindow(std::unique_ptr<Window> window) {
   // We only support one window per tab right now.
@@ -37,45 +39,17 @@ void Controller::AddWindow(std::unique_ptr<Window> window) {
 void Controller::Run() {
   while (true) {
     Render();
-    // TODO(bcf): Refactor input to another class, handle non-blocking.
-    wint_t wch = 0;
-    int res = get_wch(&wch);
-    bool is_key_code = false;
 
-    switch (res) {
-      case KEY_CODE_YES:
-        is_key_code = true;
-        break;
-      case OK:
-        break;
-      default:
-        continue;
-    }
+    Screen::KeyState key = screen_.ReadKey();
 
-    // TODO(bcf): Handle ctrl + alt key combos which are considered escape.
-    if (wch == static_cast<wchar_t>(Key::ESCAPE)) {
-      is_key_code = true;
-    }
-
-    if (is_key_code && wch == KEY_RESIZE) {
-      screen_.RefreshSize();
-      for (TabInfo& tab : tabs_) {
-        for (WindowInfo* window : tab.windows) {
-          window->rows = screen_.rows() - 2;
-          window->cols = screen_.cols();
-        }
-      }
+    if (mode_ == Mode::INSERT && !key.is_key_code) {
+      active_tab_->active_window->window->NotifyChar(key.code);
       continue;
     }
 
-    if (mode_ == Mode::INSERT && !is_key_code) {
-      active_tab_->active_window->window->NotifyChar(wch);
-      continue;
-    }
-
-    if (mode_ == Mode::COMMAND && !is_key_code) {
-      command_window_.NotifyChar(wch);
-      if (wch == '\n') {
+    if (mode_ == Mode::COMMAND && !key.is_key_code) {
+      command_window_.NotifyChar(key.code);
+      if (key.code == '\n') {
         std::string last_command = command_window_.LastCommnd();
         // TODO(bcf): Refactor to command handler when this gets big enough
         if (last_command == "q") {
@@ -87,7 +61,7 @@ void Controller::Run() {
       continue;
     }
 
-    Action action = key_config_.GetAction(wch);
+    Action action = key_config_.GetAction(key.code);
     if (action == Action::NONE) {
       continue;
     }
@@ -119,6 +93,16 @@ void Controller::Run() {
         }
     }
   }
+}
+
+void Controller::OnScreenSizeChanged() {
+  for (TabInfo& tab : tabs_) {
+    for (WindowInfo* window : tab.windows) {
+      window->rows = screen_.rows() - 2;
+      window->cols = screen_.cols();
+    }
+  }
+  Render();
 }
 
 void Controller::Render() {

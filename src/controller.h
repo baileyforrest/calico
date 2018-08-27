@@ -10,7 +10,7 @@
 #include "screen.h"      // NOLINT(build/include)
 #include "window/command_window.h"
 
-class Controller {
+class Controller : public Screen::Observer {
  public:
   Controller();
   ~Controller();
@@ -52,6 +52,9 @@ class Controller {
    private:
     DISALLOW_COPY_AND_ASSIGN(TabInfo);
   };
+
+  // Screen::Observer implementation:
+  void OnScreenSizeChanged() override;
 
   void Render();
   void RenderTabBar();
