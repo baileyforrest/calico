@@ -36,7 +36,6 @@ void BufferWindow::NotifyKey(int key) {
       ++cursor_pos_;
       // Can't go right if we're at end.
       if (*cursor_pos_ == '\n') {
-        --cursor_pos_;
         return;
       }
       ++cursor_col_;
@@ -87,8 +86,22 @@ void BufferWindow::NotifyKey(int key) {
       cursor_pos_ = buf_.erase(cursor_pos_);
       return;
     }
+
+    case KEY_HOME: {
+      cursor_pos_ = cursor_pos_.LastLineStart(false /* ignore_current_pos */);
+      return;
+    }
+    case KEY_END: {
+      size_t diff;
+      cursor_pos_ = cursor_pos_.NextLineStart(&diff);
+      if (diff > 0) {
+        --cursor_pos_;
+      }
+      return;
+    }
   }
 
+  // Default case, just insert the key.
   cursor_pos_ = buf_.insert(cursor_pos_, key);
   ++cursor_pos_;
 
@@ -104,6 +117,8 @@ void BufferWindow::NotifyKey(int key) {
   if (cursor_row_ + rows_used >= rows_) {
     cursor_row_ = std::max(0, rows_ - 1 - rows_used);
   }
+
+  cursor_col_ = line_start_diff;
 }
 
 void BufferWindow::Render(

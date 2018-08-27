@@ -100,37 +100,31 @@ Buffer::iterator& Buffer::iterator::operator--() {
 
 Buffer::iterator Buffer::iterator::LastLineStart(bool ignore_current_pos,
                                                  size_t* pdiff) const {
-  size_t diff = 0;
-  if (*this == buf_->begin()) {
-    if (pdiff) {
-      *pdiff = diff;
-    }
-    return *this;
-  }
-
   iterator it = *this;
-  if (ignore_current_pos) {
+  size_t diff = 0;
+  if (ignore_current_pos && it != buf_->begin()) {
     --it;
     ++diff;
-
-    if (*it == '\n' && it != buf_->begin()) {
-      --it;
-      ++diff;
-    }
-
-    // Special case: If we have two newlines in a row, then the last second
-    // newline is the start of the line.
-    if (*it == '\n') {
-      ++it;
-      --diff;
-    }
   }
-  // Special case: Empty line
-  if (*it == '\n') {
+  if (it == buf_->begin()) {
     if (pdiff) {
       *pdiff = diff;
     }
     return it;
+  }
+
+  // Special case: Empty line is two newlines in a row.
+  if (*it == '\n') {
+    --it;
+    ++diff;
+    if (*it == '\n') {
+      ++it;
+      --diff;
+      if (pdiff) {
+        *pdiff = diff;
+      }
+      return it;
+    }
   }
 
   // Find the next newline.
