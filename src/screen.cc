@@ -7,11 +7,7 @@
 #include <cstdlib>
 #include <iostream>
 
-using std::placeholders::_1;
-using std::placeholders::_2;
-using std::placeholders::_3;
-
-Screen::Screen() : render_cb_(std::bind(&Screen::SetChar, this, _1, _2, _3)) {
+Screen::Screen() {
   setlocale(LC_ALL, "");
   initscr();
   raw();
