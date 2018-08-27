@@ -1,8 +1,13 @@
 #pragma once
 
+#include <functional>
 #include <list>
+#include <map>
 #include <memory>
 #include <utility>
+#include <vector>
+#include <set>
+#include <string>
 
 #include "action.h"  // NOLINT(build/include)
 #include "base/macros.h"
@@ -46,12 +51,18 @@ class Controller : public Screen::Observer {
     TabInfo() = default;
     TabInfo(TabInfo&&) = default;
 
-    std::list<WindowInfo*> windows;  // Does not own.
+    std::set<WindowInfo*> windows;  // Does not own.
     WindowInfo* active_window = nullptr;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TabInfo);
   };
+
+  struct Command {
+    const char* name;
+    void (Controller::*handler)(const std::vector<std::string>& command);
+  };
+  static const Command kDefaultCommands[];
 
   // Screen::Observer implementation:
   void OnScreenSizeChanged() override;
@@ -60,12 +71,23 @@ class Controller : public Screen::Observer {
   void RenderTabBar();
   void RenderStatus();
 
+  void HandleCommand(const std::string& command);
+  void HandleQuit(const std::vector<std::string>& command);
+
+  bool should_quit_ = false;
+
   KeyConfig key_config_;
   Screen screen_;
   CommandWindow command_window_;
+  std::string command_error_;
 
   Mode mode_ = Mode::NORMAL;
+  Mode last_mode_ = Mode::NORMAL;
+
   std::list<TabInfo> tabs_;
   std::list<WindowInfo> windows_;
-  TabInfo* active_tab_ = nullptr;
+  std::list<TabInfo>::iterator active_tab_;
+
+  std::map<std::string, std::function<void(const std::vector<std::string>&)>>
+      command_to_action_;
 };

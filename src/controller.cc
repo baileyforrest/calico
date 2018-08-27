@@ -6,13 +6,28 @@
 #include <string>
 #include <utility>
 
+#include "base/string_util.h"
 #include "key.h"  // NOLINT(build/include)
 #include "window/window.h"
 
+using std::placeholders::_1;
+
+// clang-format off
+// static
+const Controller::Command Controller::kDefaultCommands[] = {
+  {"q", &Controller::HandleQuit},
+};
+// clang-format on
+
 Controller::Controller() {
   tabs_.push_back(TabInfo());
-  active_tab_ = &tabs_.front();
+  active_tab_ = tabs_.begin();
   screen_.AddObserver(this);
+
+  for (const auto& command : kDefaultCommands) {
+    command_to_action_.emplace(command.name,
+                               std::bind(command.handler, this, _1));
+  }
 }
 
 Controller::~Controller() {
@@ -33,11 +48,16 @@ void Controller::AddWindow(std::unique_ptr<Window> window) {
 
   windows_.push_back(std::move(info));
   active_tab_->active_window = &windows_.back();
-  active_tab_->windows.push_back(&windows_.back());
+  active_tab_->windows.insert(&windows_.back());
 }
 
 void Controller::Run() {
-  while (true) {
+  while (!should_quit_) {
+    if (mode_ != last_mode_ && mode_ != Mode::NORMAL) {
+      command_error_.clear();
+    }
+    last_mode_ = mode_;
+
     Render();
 
     Screen::KeyState key = screen_.ReadKey();
@@ -50,12 +70,7 @@ void Controller::Run() {
     if (mode_ == Mode::COMMAND && !key.is_key_code) {
       command_window_.NotifyChar(key.code);
       if (key.code == '\n') {
-        std::string last_command = command_window_.LastCommnd();
-        // TODO(bcf): Refactor to command handler when this gets big enough
-        if (last_command == "q") {
-          return;
-        }
-
+        HandleCommand(command_window_.LastCommnd());
         mode_ = Mode::NORMAL;
       }
       continue;
@@ -85,12 +100,13 @@ void Controller::Run() {
         }
         continue;
       }
-      default:
+      default: {
         if (mode_ == Mode::COMMAND) {
           command_window_.NotifyAction(action);
         } else {
           active_tab_->active_window->window->NotifyAction(action);
         }
+      }
     }
   }
 }
@@ -154,7 +170,7 @@ void Controller::RenderTabBar() {
       break;
     }
 
-    bool is_primary = active_tab_ == &tab;
+    bool is_primary = &*active_tab_ == &tab;
     if (!is_primary) {
       screen_.EnableReverse();
     }
@@ -180,6 +196,11 @@ void Controller::RenderStatus() {
       return;
     }
     case Mode::NORMAL: {
+      if (!command_error_.empty()) {
+        screen_.EnableReverse();
+        screen_.SetChars(screen_.rows() - 1, 0, command_error_);
+        screen_.DisableReverse();
+      }
       return;
     }
     case Mode::COMMAND: {
@@ -200,4 +221,34 @@ void Controller::RenderStatus() {
       return;
     }
   }
+}
+
+void Controller::HandleCommand(const std::string& command) {
+  std::vector<std::string> split = StringSplit(command);
+  if (split.empty()) {
+    return;
+  }
+
+  auto it = command_to_action_.find(split[0]);
+  if (it == command_to_action_.end()) {
+    command_error_ = "Not an editor command: " + command;
+    return;
+  }
+
+  it->second(split);
+}
+
+void Controller::HandleQuit(const std::vector<std::string>& command) {
+  active_tab_->windows.erase(active_tab_->active_window);
+
+  // Delete the tab if empty, then exit the program if no tabs are left.
+  if (active_tab_->windows.empty()) {
+    active_tab_ = tabs_.erase(active_tab_);
+    if (active_tab_ == tabs_.end()) {
+      should_quit_ = true;
+      return;
+    }
+  }
+
+  active_tab_->active_window = *active_tab_->windows.begin();
 }
