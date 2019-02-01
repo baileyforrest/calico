@@ -1,6 +1,7 @@
 #include "window/buffer_window.h"
 
 #include <algorithm>
+#include <limits>
 #include <cctype>
 #include <cassert>
 
@@ -50,7 +51,7 @@ void BufferWindow::NotifyAction(Action action) {
         size_t diff;
         cursor_pos_ =
             cur_start.LastLineStart(true /* ignore_current_pos */, &diff);
-        int rows_used = 1 + diff / cols_;
+        int rows_used = (cols_ - 1 + diff) / cols_;
 
         cursor_row_ = std::max(0, cursor_row_ - rows_used);
       } else {  // Action::DOWN
@@ -58,14 +59,9 @@ void BufferWindow::NotifyAction(Action action) {
         cursor_pos_.LastLineStart(false /* ignore_current_pos */, &start_diff);
 
         size_t end_diff;
-        auto next_start = cursor_pos_.NextLineStart(&end_diff);
-        if (next_start == buf_.end()) {
-          return;
-        }
+        cursor_pos_ = cursor_pos_.NextLineStart(&end_diff);
 
-        cursor_pos_ = next_start;
-
-        int rows_used = 1 + (start_diff + end_diff) / cols_;
+        int rows_used = (cols_ - 1 + start_diff + end_diff) / cols_;
         cursor_row_ = std::min(cursor_row_ + rows_used, rows_ - 1);
       }
 
@@ -88,10 +84,12 @@ void BufferWindow::NotifyAction(Action action) {
     }
 
     case Action::HOME: {
+      cursor_col_ = 0;
       cursor_pos_ = cursor_pos_.LastLineStart(false /* ignore_current_pos */);
       return;
     }
     case Action::END: {
+      cursor_col_ = std::numeric_limits<decltype(cursor_col_)>::max();
       size_t diff;
       cursor_pos_ = cursor_pos_.NextLineStart(&diff);
       if (diff > 0) {
@@ -163,7 +161,7 @@ void BufferWindow::Render(
     if (diff == 0) {
       break;
     }
-    int line_length = diff - 1;
+    int line_length = diff;
 
     int rows_used = std::max(1, (line_length + cols_ - 1) / cols_);
     int line_row = row - (rows_used - 1);

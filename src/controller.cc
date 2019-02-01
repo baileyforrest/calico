@@ -70,7 +70,9 @@ void Controller::Run() {
     if (mode_ == Mode::COMMAND && !key.is_key_code) {
       command_window_.NotifyChar(key.code);
       if (key.code == '\n') {
-        HandleCommand(command_window_.LastCommnd());
+        if (command_window_.HasNewCommand()) {
+          HandleCommand(command_window_.LastCommand());
+        }
         mode_ = Mode::NORMAL;
       }
       continue;
