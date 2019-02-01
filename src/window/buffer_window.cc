@@ -34,7 +34,7 @@ void BufferWindow::NotifyAction(Action action) {
       }
       ++cursor_pos_;
       // Can't go right if we're at end.
-      if (*cursor_pos_ == '\n') {
+      if (cursor_pos_ != buf_.end() && *cursor_pos_ == '\n') {
         return;
       }
       ++cursor_col_;
@@ -48,7 +48,7 @@ void BufferWindow::NotifyAction(Action action) {
             cursor_pos_.LastLineStart(false /* ignore_current_pos */);
         cursor_pos_ =
             cur_start.LastLineStart(true /* ignore_current_pos */, &diff);
-        if (diff > 0 && cursor_row_ >= 0) {
+        if (diff > 0 && cursor_row_ > 0) {
           --cursor_row_;
         }
       } else {
@@ -58,7 +58,7 @@ void BufferWindow::NotifyAction(Action action) {
         }
 
         cursor_pos_ = next_start;
-        if (diff > 0 && cursor_row_ < rows_) {
+        if (diff > 0 && cursor_row_ < rows_ - 1) {
           ++cursor_row_;
         }
       }

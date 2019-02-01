@@ -113,6 +113,23 @@ Buffer::iterator Buffer::iterator::LastLineStart(bool ignore_current_pos,
     return it;
   }
 
+  // We can't derefernce end of the buffer.
+  if (it == buf_->end()) {
+    --it;
+    ++diff;
+
+    // If we're at the end and the previous character is newline, then we were
+    // already at the start of the line.
+    if (*it == '\n') {
+      ++it;
+      --diff;
+      if (pdiff) {
+        *pdiff = 0;
+      }
+      return it;
+    }
+  }
+
   // Special case: Empty line is two newlines in a row.
   if (*it == '\n') {
     --it;
