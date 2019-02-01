@@ -42,25 +42,29 @@ void BufferWindow::NotifyAction(Action action) {
     }
     case Action::UP:
     case Action::DOWN: {
-      size_t diff;
       if (action == Action::UP) {
         auto cur_start =
             cursor_pos_.LastLineStart(false /* ignore_current_pos */);
+        size_t diff;
         cursor_pos_ =
             cur_start.LastLineStart(true /* ignore_current_pos */, &diff);
-        if (diff > 0 && cursor_row_ > 0) {
-          --cursor_row_;
-        }
-      } else {
-        auto next_start = cursor_pos_.NextLineStart(&diff);
+        int rows_used = 1 + diff / cols_;
+
+        cursor_row_ = std::max(0, cursor_row_ - rows_used);
+      } else {  // Action::DOWN
+        size_t start_diff;
+        cursor_pos_.LastLineStart(false /* ignore_current_pos */, &start_diff);
+
+        size_t end_diff;
+        auto next_start = cursor_pos_.NextLineStart(&end_diff);
         if (next_start == buf_.end()) {
           return;
         }
 
         cursor_pos_ = next_start;
-        if (diff > 0 && cursor_row_ < rows_ - 1) {
-          ++cursor_row_;
-        }
+
+        int rows_used = 1 + (start_diff + end_diff) / cols_;
+        cursor_row_ = std::min(cursor_row_ + rows_used, rows_ - 1);
       }
 
       // Move cursor to the desired column
@@ -107,6 +111,10 @@ void BufferWindow::NotifyChar(wchar_t key) {
   // Default case, just insert the key.
   cursor_pos_ = buf_.insert(cursor_pos_, key);
   ++cursor_pos_;
+
+  if (key == '\n' && cursor_row_ < rows_ - 1) {
+    ++cursor_row_;
+  }
 
   // Reposition cursor if current position won't fit on screen.
   size_t line_start_diff;
