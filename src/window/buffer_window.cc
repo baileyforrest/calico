@@ -25,7 +25,9 @@ void BufferWindow::NotifyAction(Action action) {
         ++cursor_pos_;
         return;
       }
-      --cursor_col_;
+      size_t diff;
+      cursor_pos_.LastLineStart(false /* ignore_current_pos */, &diff);
+      cursor_col_ = diff;
       return;
     }
     case Action::RIGHT: {
@@ -68,16 +70,11 @@ void BufferWindow::NotifyAction(Action action) {
       }
 
       // Move cursor to the desired column
-      // Do nothing if it's an empty line.
-      if (*cursor_pos_ == '\n') {
-        return;
-      }
       for (int i = 0; i < cursor_col_; ++i) {
-        ++cursor_pos_;
-        if (*cursor_pos_ == '\n') {
-          --cursor_pos_;
+        if (cursor_pos_ == buf_.end() || *cursor_pos_ == '\n') {
           break;
         }
+        ++cursor_pos_;
       }
       return;
     }
