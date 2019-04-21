@@ -1,7 +1,7 @@
 #include <algorithm>
-#include <cstdio>
 #include <cassert>
 #include <cinttypes>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -231,9 +231,7 @@ Buffer Buffer::FromFile(const std::string& path) {
 }
 
 Buffer::Buffer() = default;
-Buffer::Buffer(Buffer&& other) {
-  *this = std::move(other);
-}
+Buffer::Buffer(Buffer&& other) { *this = std::move(other); }
 
 Buffer::~Buffer() {
   for (Node* node = head_; node != nullptr;) {

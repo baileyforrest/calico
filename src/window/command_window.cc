@@ -4,9 +4,7 @@ CommandWindow::CommandWindow() {}
 
 CommandWindow::~CommandWindow() = default;
 
-std::string CommandWindow::Name() {
-  return "[Command Window]";
-}
+std::string CommandWindow::Name() { return "[Command Window]"; }
 
 void CommandWindow::NotifyChar(wchar_t key) {
   if (key != '\n') {

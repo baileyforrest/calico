@@ -4,5 +4,3 @@ bazel-calico
 bazel-genfiles
 bazel-out
 bazel-testlogs
-bin
-build

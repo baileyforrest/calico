@@ -1,9 +1,9 @@
 #include "src/window/buffer_window.h"
 
 #include <algorithm>
-#include <limits>
-#include <cctype>
 #include <cassert>
+#include <cctype>
+#include <limits>
 
 BufferWindow::BufferWindow() : cursor_pos_(buf_.begin()) {}
 

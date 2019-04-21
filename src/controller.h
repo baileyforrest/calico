@@ -4,10 +4,10 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <utility>
-#include <vector>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "action.h"  // NOLINT(build/include)
 #include "base/macros.h"

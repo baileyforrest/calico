@@ -23,7 +23,6 @@ cc_library(
         "controller.cc",
         "key_config.cc",
         "main.cc",
-        "main_test.cc",
         "screen.cc",
     ],
     hdrs = [

@@ -29,21 +29,13 @@ Screen::Screen() {
   Refresh();
 }
 
-Screen::~Screen() {
-  endwin();
-}
+Screen::~Screen() { endwin(); }
 
-void Screen::AddObserver(Observer* o) {
-  observers_.insert(o);
-}
+void Screen::AddObserver(Observer* o) { observers_.insert(o); }
 
-void Screen::RemoveObserver(Observer* o) {
-  observers_.erase(o);
-}
+void Screen::RemoveObserver(Observer* o) { observers_.erase(o); }
 
-void Screen::Clear() {
-  clear();
-}
+void Screen::Clear() { clear(); }
 
 void Screen::SetChar(int row, int col, wchar_t val) {
   assert(row >= 0 && row < rows_);
@@ -63,25 +55,15 @@ void Screen::SetCursorPos(int row, int col) {
   move(row, col);  // NOLINT(build/include_what_you_use)
 }
 
-void Screen::Refresh() {
-  refresh();
-}
+void Screen::Refresh() { refresh(); }
 
-void Screen::EnableReverse() {
-  attron(A_REVERSE);
-}
+void Screen::EnableReverse() { attron(A_REVERSE); }
 
-void Screen::DisableReverse() {
-  attroff(A_REVERSE);
-}
+void Screen::DisableReverse() { attroff(A_REVERSE); }
 
-void Screen::EnableBold() {
-  attron(A_BOLD);
-}
+void Screen::EnableBold() { attron(A_BOLD); }
 
-void Screen::DisableBold() {
-  attroff(A_BOLD);
-}
+void Screen::DisableBold() { attroff(A_BOLD); }
 
 Screen::KeyState Screen::ReadKey() {
   while (true) {
@@ -125,6 +107,4 @@ Screen::KeyState Screen::ReadKey() {
   }
 }
 
-void Screen::RefreshSize() {
-  getmaxyx(stdscr, rows_, cols_);
-}
+void Screen::RefreshSize() { getmaxyx(stdscr, rows_, cols_); }

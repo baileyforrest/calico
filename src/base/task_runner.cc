@@ -26,8 +26,7 @@ void TaskRunner::PostDelayedTask(Closure f, const Duration& delay) {
   std::unique_lock<std::mutex> lock(mutex_);
   auto it = delayed_tasks_.begin();
   for (; it != delayed_tasks_.end(); ++it) {
-    if (run_at <= it->first)
-      break;
+    if (run_at <= it->first) break;
   }
 
   delayed_tasks_.insert(it, std::make_pair(run_at, std::move(f)));
@@ -45,11 +44,9 @@ void TaskRunner::RunLoop() {
   while (true) {
     std::unique_lock<std::mutex> lock(mutex_);
     while (true) {
-      if (!running_)
-        return;
+      if (!running_) return;
 
-      if (!tasks_.empty())
-        break;
+      if (!tasks_.empty()) break;
 
       if (!delayed_tasks_.empty()) {
         auto now = std::chrono::steady_clock::now();

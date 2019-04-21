@@ -7,6 +7,4 @@ FileWindow::FileWindow(const std::string& filename) : filename_(filename) {
 
 FileWindow::~FileWindow() = default;
 
-std::string FileWindow::Name() {
-  return filename_;
-}
+std::string FileWindow::Name() { return filename_; }

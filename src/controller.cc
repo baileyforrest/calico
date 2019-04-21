@@ -30,9 +30,7 @@ Controller::Controller() {
   }
 }
 
-Controller::~Controller() {
-  screen_.RemoveObserver(this);
-}
+Controller::~Controller() { screen_.RemoveObserver(this); }
 
 void Controller::AddWindow(std::unique_ptr<Window> window) {
   // We only support one window per tab right now.
