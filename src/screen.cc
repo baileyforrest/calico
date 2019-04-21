@@ -1,4 +1,4 @@
-#include "screen.h"  // NOLINT(build/include)
+#include "src/screen.h"
 
 #include <locale.h>
 #include <ncurses.h>
@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "key.h"  // NOLINT(build/include)
+#include "src/key.h"
 
 namespace {
 

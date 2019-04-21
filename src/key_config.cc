@@ -1,8 +1,8 @@
-#include "key_config.h"  // NOLINT(build/include)
+#include "src/key_config.h"
 
 #include <ncurses.h>
 
-#include "key.h"  // NOLINT(build/include)
+#include "src/key.h"
 
 namespace {
 

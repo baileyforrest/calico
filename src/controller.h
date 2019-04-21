@@ -9,11 +9,11 @@
 #include <utility>
 #include <vector>
 
-#include "action.h"  // NOLINT(build/include)
-#include "base/macros.h"
-#include "key_config.h"  // NOLINT(build/include)
-#include "screen.h"      // NOLINT(build/include)
-#include "window/command_window.h"
+#include "src/action.h"
+#include "src/base/macros.h"
+#include "src/key_config.h"
+#include "src/screen.h"
+#include "src/window/command_window.h"
 
 class Controller : public Screen::Observer {
  public:

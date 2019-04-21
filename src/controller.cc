@@ -1,4 +1,4 @@
-#include "controller.h"  // NOLINT(build/include)
+#include "src/controller.h"
 
 #include <libgen.h>
 
@@ -6,9 +6,9 @@
 #include <string>
 #include <utility>
 
-#include "base/string_util.h"
-#include "key.h"  // NOLINT(build/include)
-#include "window/window.h"
+#include "src/base/string_util.h"
+#include "src/key.h"
+#include "src/window/window.h"
 
 using std::placeholders::_1;
 

@@ -3,7 +3,7 @@
 #include <cwchar>
 #include <map>
 
-#include "action.h"  // NOLINT(build/include)
+#include "src/action.h"
 
 class KeyConfig {
  public:
