@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 
-#include "base/buffer.h"
+#include "src/base/buffer.h"
 
 namespace {
 

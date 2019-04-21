@@ -24,9 +24,9 @@ DCOMPILE_FLAGS = -DDEBUG -g $(SAN_FLAGS)
 INCLUDES = \
 	-I$(SRC_DIR) \
 	-I$(GTEST_DIR)/include
-LINK_FLAGS = -g $(shell ncursesw5-config --libs)
+LINK_FLAGS = -lpthread $(shell ncursesw5-config --libs)
 RLINK_FLAGS =
-DLINK_FLAGS = $(SAN_FLAGS)
+DLINK_FLAGS = -g $(SAN_FLAGS)
 
 TEST_CXXFLAGS := -isystem -pthread
 TEST_LDFLAGS := -lpthread

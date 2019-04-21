@@ -1,4 +1,4 @@
-#include "window/command_window.h"
+#include "src/window/command_window.h"
 
 CommandWindow::CommandWindow() {}
 

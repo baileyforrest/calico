@@ -9,7 +9,8 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   Controller controller;
-  auto window = std::make_unique<FileWindow>(argv[1]);
+  // TODO(bcf): absl::make_unique
+  std::unique_ptr<FileWindow> window(new FileWindow(argv[1]));
   controller.AddWindow(std::move(window));
   controller.Run();
 

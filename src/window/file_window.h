@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "window/buffer_window.h"
+#include "src/window/buffer_window.h"
 
 class FileWindow : public BufferWindow {
  public:

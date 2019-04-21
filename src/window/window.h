@@ -4,7 +4,7 @@
 #include <string>
 #include <utility>
 
-#include "action.h"  // NOLINT(build/include)
+#include "src/action.h"
 
 class Window {
  public:

@@ -1,4 +1,4 @@
-#include "window/buffer_window.h"
+#include "src/window/buffer_window.h"
 
 #include <algorithm>
 #include <limits>

@@ -1,3 +1,8 @@
 .gdb_history
+bazel-bin
+bazel-calico
+bazel-genfiles
+bazel-out
+bazel-testlogs
 bin
 build

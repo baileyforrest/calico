@@ -1,4 +1,4 @@
-#include "window/file_window.h"
+#include "src/window/file_window.h"
 
 FileWindow::FileWindow(const std::string& filename) : filename_(filename) {
   buf() = Buffer::FromFile(filename);

@@ -3,8 +3,8 @@
 #include <string>
 #include <utility>
 
-#include "base/buffer.h"
-#include "window.h"  // NOLINT(build/include)
+#include "src/base/buffer.h"
+#include "src/window/window.h"
 
 class BufferWindow : public Window {
  public:

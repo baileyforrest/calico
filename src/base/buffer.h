@@ -3,7 +3,7 @@
 #include <iterator>
 #include <string>
 
-#include "base/macros.h"
+#include "src/base/macros.h"
 
 // TODO(bcf): Implement const iterator?
 class Buffer {
