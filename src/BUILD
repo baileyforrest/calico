@@ -7,6 +7,7 @@ cc_binary(
     ],
     deps = [
         ":core",
+        "@absl//absl/memory",
     ],
 )
 
@@ -22,7 +23,6 @@ cc_library(
     srcs = [
         "controller.cc",
         "key_config.cc",
-        "main.cc",
         "screen.cc",
     ],
     hdrs = [

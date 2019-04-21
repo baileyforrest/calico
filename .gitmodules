@@ -4,3 +4,7 @@
 [submodule "third_party/styleguide"]
 	path = third_party/styleguide
 	url = git@github.com:google/styleguide.git
+[submodule "third_party/abseil-cpp"]
+	path = third_party/abseil-cpp
+	url = git@github.com:abseil/abseil-cpp.git
+	branch = lts_2018_12_18
