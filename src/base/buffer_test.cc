@@ -215,9 +215,7 @@ TEST(BufferTest, InsertMiddleBig) {
   const int kNumIters = 2048;
 
   int char_idx = 0;
-  auto get_char = [&char_idx] {
-    return 'a' + (char_idx++ % 26);
-  };  // NOLINT(whitespace/newline)
+  auto get_char = [&char_idx] { return 'a' + (char_idx++ % 26); };
 
   std::string str = "a";
   Buffer buf = BufferFromString(str);
@@ -240,9 +238,7 @@ TEST(BufferTest, EraseMiddleBig) {
   const int kNumIters = 2048;
 
   int char_idx = 0;
-  auto get_char = [&char_idx] {
-    return 'a' + (char_idx++ % 26);
-  };  // NOLINT(whitespace/newline)
+  auto get_char = [&char_idx] { return 'a' + (char_idx++ % 26); };
 
   std::string str;
 

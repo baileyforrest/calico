@@ -1,4 +1,4 @@
-#include "string_util.h"  // NOLINT(build/include)
+#include "src/base/string_util.h"
 
 #include <iterator>
 #include <sstream>
