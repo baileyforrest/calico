@@ -64,6 +64,10 @@ class Controller : public Screen::Observer {
   };
   static const Command kDefaultCommands[];
 
+  Window* active_window() {
+    return active_tab_->active_window->window.get();
+  }
+
   // Screen::Observer implementation:
   void OnScreenSizeChanged() override;
 

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "src/action.h"
+#include "absl/types/span.h"
 
 class Window {
  public:
@@ -17,4 +18,9 @@ class Window {
   virtual void Render(
       const std::function<void(int row, int col, wchar_t val)>& cb) = 0;
   virtual std::pair<int, int> GetCursorPos() = 0;
+
+  // Returns true if the command was handled.
+  virtual bool NotifyCommand(absl::Span<std::string> command,
+      std::string* error_string) { return false;
+  }
 };

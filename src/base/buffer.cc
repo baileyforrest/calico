@@ -461,6 +461,11 @@ Buffer::iterator Buffer::erase(iterator iter) {
   return iterator(this, next_node, next_offset);
 }
 
+// TODO(bcf): Implement.
+bcf::Result<void> Buffer::WriteToFile(absl::string_view path) {
+  return {};
+}
+
 void Buffer::DumpContents() {
   std::cout << "{";
   for (auto c : *this) {

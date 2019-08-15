@@ -104,7 +104,7 @@ void Controller::Run() {
         if (mode_ == Mode::COMMAND) {
           command_window_.NotifyAction(action);
         } else {
-          active_tab_->active_window->window->NotifyAction(action);
+          active_window()->NotifyAction(action);
         }
       }
     }
@@ -224,18 +224,24 @@ void Controller::RenderStatus() {
 }
 
 void Controller::HandleCommand(const std::string& command) {
-  std::vector<std::string> split = StringSplit(command);
-  if (split.empty()) {
+  std::vector<std::string> split_command = StringSplit(command);
+  if (split_command.empty()) {
     return;
   }
 
-  auto it = command_to_action_.find(split[0]);
-  if (it == command_to_action_.end()) {
-    command_error_ = "Not an editor command: " + command;
+  // Check if window handles the command.
+  if (active_window()->NotifyCommand(absl::MakeSpan(split_command), &command_error_)) {
     return;
   }
 
-  it->second(split);
+  // Check if any global actions are installed.
+  auto it = command_to_action_.find(split_command[0]);
+  if (it != command_to_action_.end()) {
+    it->second(split_command);
+    return;
+  }
+
+  command_error_ = "Not an editor command: " + command;
 }
 
 void Controller::HandleQuit(const std::vector<std::string>& command) {

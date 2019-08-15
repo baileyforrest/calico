@@ -25,6 +25,8 @@ cc_library(
     deps = [
         ":base",
         "@gtest",
+        "@absl//absl/strings",
+        "@bcf//bcf:err",
     ],
 )
 

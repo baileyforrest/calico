@@ -14,6 +14,7 @@ def Settings( **kwargs ):
 
     '-I', 'third_party/googletest/googletest/include',
     '-I', 'third_party/abseil-cpp',
+    '-I', 'third_party/libbcf',
     '-pthread',
   ]
 

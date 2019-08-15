@@ -8,3 +8,6 @@
 	path = third_party/abseil-cpp
 	url = git@github.com:abseil/abseil-cpp.git
 	branch = lts_2018_12_18
+[submodule "third_party/libbcf"]
+	path = third_party/libbcf
+	url = https://github.com/baileyforrest/libbcf.git

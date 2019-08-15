@@ -12,6 +12,11 @@ local_repository(
     path = "third_party/googletest",
 )
 
+local_repository(
+    name = "bcf",
+    path = "third_party/libbcf",
+)
+
 # Buildifier setup
 http_archive(
     name = "io_bazel_rules_go",
