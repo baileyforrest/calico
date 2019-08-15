@@ -6,11 +6,14 @@
 #include "src/window/file_window.h"
 
 int main(int argc, char** argv) {
-  if (argc < 2) {
-    return EXIT_FAILURE;
-  }
   Controller controller;
-  auto window = absl::make_unique<FileWindow>(argv[1]);
+
+  std::string file_path;
+  if (argc > 1) {
+    file_path = argv[1];
+  }
+
+  auto window = absl::make_unique<FileWindow>(file_path);
   controller.AddWindow(std::move(window));
   controller.Run();
 
