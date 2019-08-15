@@ -462,9 +462,7 @@ Buffer::iterator Buffer::erase(iterator iter) {
 }
 
 // TODO(bcf): Implement.
-bcf::Result<void> Buffer::WriteToFile(absl::string_view path) {
-  return {};
-}
+bcf::Result<void> Buffer::WriteToFile(absl::string_view path) { return {}; }
 
 void Buffer::DumpContents() {
   std::cout << "{";

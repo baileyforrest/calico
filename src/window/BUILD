@@ -17,6 +17,6 @@ cc_library(
         "//src:action",
         "//src/base",
         "//src/base:buffer",
-        "@absl//absl/types:span"
+        "@absl//absl/types:span",
     ],
 )

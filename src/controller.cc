@@ -230,7 +230,8 @@ void Controller::HandleCommand(const std::string& command) {
   }
 
   // Check if window handles the command.
-  if (active_window()->NotifyCommand(absl::MakeSpan(split_command), &command_error_)) {
+  if (active_window()->NotifyCommand(absl::MakeSpan(split_command),
+                                     &command_error_)) {
     return;
   }
 

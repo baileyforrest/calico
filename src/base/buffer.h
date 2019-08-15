@@ -3,9 +3,9 @@
 #include <iterator>
 #include <string>
 
-#include "src/base/macros.h"
-#include "bcf/err.h"
 #include "absl/strings/string_view.h"
+#include "bcf/err.h"
+#include "src/base/macros.h"
 
 // TODO(bcf): Implement const iterator?
 class Buffer {

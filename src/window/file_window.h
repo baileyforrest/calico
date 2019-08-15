@@ -12,7 +12,7 @@ class FileWindow : public BufferWindow {
   // Window implementation:
   std::string Name() override;
   bool NotifyCommand(absl::Span<std::string> command,
-      std::string* error_string) override;
+                     std::string* error_string) override;
 
  private:
   std::string filename_;

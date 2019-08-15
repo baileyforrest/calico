@@ -10,6 +10,6 @@ FileWindow::~FileWindow() = default;
 std::string FileWindow::Name() { return filename_; }
 
 bool FileWindow::NotifyCommand(absl::Span<std::string> command,
-      std::string* error_string) {
+                               std::string* error_string) {
   return false;
 }

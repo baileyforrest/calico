@@ -4,8 +4,8 @@
 #include <string>
 #include <utility>
 
-#include "src/action.h"
 #include "absl/types/span.h"
+#include "src/action.h"
 
 class Window {
  public:
@@ -21,6 +21,7 @@ class Window {
 
   // Returns true if the command was handled.
   virtual bool NotifyCommand(absl::Span<std::string> command,
-      std::string* error_string) { return false;
+                             std::string* error_string) {
+    return false;
   }
 };
