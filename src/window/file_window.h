@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "bcf/err.h"
 #include "src/window/buffer_window.h"
 
 class FileWindow : public BufferWindow {
@@ -11,9 +12,11 @@ class FileWindow : public BufferWindow {
 
   // Window implementation:
   std::string Name() override;
-  bool NotifyCommand(absl::Span<std::string> command,
-                     std::string* error_string) override;
+  absl::optional<CommandStatus> NotifyCommand(
+      absl::Span<std::string> command) override;
 
  private:
+  CommandStatus HandleWrite(absl::Span<std::string> args);
+
   std::string filename_;
 };

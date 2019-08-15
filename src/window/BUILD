@@ -15,8 +15,10 @@ cc_library(
     ],
     deps = [
         "//src:action",
+        "//src:command-status",
         "//src/base",
         "//src/base:buffer",
+        "@absl//absl/types:optional",
         "@absl//absl/types:span",
     ],
 )

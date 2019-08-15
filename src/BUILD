@@ -19,6 +19,13 @@ cc_library(
 )
 
 cc_library(
+    name = "command-status",
+    hdrs = [
+        "command-status.h",
+    ],
+)
+
+cc_library(
     name = "core",
     srcs = [
         "controller.cc",
@@ -40,8 +47,10 @@ cc_library(
         "-ltinfo",
     ],
     deps = [
+        ":command-status",
         "//src/base",
         "//src/base:buffer",
         "//src/window",
+        "@absl//absl/types:optional",
     ],
 )

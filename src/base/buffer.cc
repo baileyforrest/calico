@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
 #include "src/base/buffer.h"
 
 Buffer::iterator::iterator(Buffer* buf, Node* node, int16_t offset)
@@ -461,8 +462,34 @@ Buffer::iterator Buffer::erase(iterator iter) {
   return iterator(this, next_node, next_offset);
 }
 
-// TODO(bcf): Implement.
-bcf::Result<void> Buffer::WriteToFile(absl::string_view path) { return {}; }
+bcf::Result<void> Buffer::WriteToFile(const std::string& path) {
+  std::unique_ptr<FILE, decltype(&fclose)> filep(fopen(path.c_str(), "w"),
+                                                 &fclose);
+  if (!filep) {
+    return bcf::BuildPosixErr(absl::StrCat("Failed to open ", path));
+  }
+
+  char buf[BUFSIZ];
+  size_t buf_used = 0;
+
+  // TODO(bcf): Support unicode.
+  for (auto c : *this) {
+    buf[buf_used++] = c;
+    if (buf_used == sizeof(buf)) {
+      if (fwrite(buf, 1, sizeof(buf), filep.get()) != sizeof(buf)) {
+        return bcf::BuildPosixErr(absl::StrCat("Failed to write ", path));
+      }
+
+      buf_used = 0;
+    }
+  }
+
+  if (fwrite(buf, 1, buf_used, filep.get()) != buf_used) {
+    return bcf::BuildPosixErr(absl::StrCat("Failed to write ", path));
+  }
+
+  return {};
+}
 
 void Buffer::DumpContents() {
   std::cout << "{";

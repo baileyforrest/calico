@@ -3,7 +3,6 @@
 #include <iterator>
 #include <string>
 
-#include "absl/strings/string_view.h"
 #include "bcf/err.h"
 #include "src/base/macros.h"
 
@@ -67,7 +66,7 @@ class Buffer {
   iterator insert(iterator iter, wchar_t value);
   iterator erase(iterator iter);
 
-  bcf::Result<void> WriteToFile(absl::string_view path);
+  bcf::Result<void> WriteToFile(const std::string& path);
 
   void DumpContents();
 

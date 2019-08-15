@@ -52,7 +52,7 @@ void Controller::AddWindow(std::unique_ptr<Window> window) {
 void Controller::Run() {
   while (!should_quit_) {
     if (mode_ != last_mode_ && mode_ != Mode::NORMAL) {
-      command_error_.clear();
+      command_status_.reset();
     }
     last_mode_ = mode_;
 
@@ -196,10 +196,15 @@ void Controller::RenderStatus() {
       return;
     }
     case Mode::NORMAL: {
-      if (!command_error_.empty()) {
-        screen_.EnableReverse();
-        screen_.SetChars(screen_.rows() - 1, 0, command_error_);
-        screen_.DisableReverse();
+      if (command_status_) {
+        bool reverse = command_status_->type == CommandStatus::Type::kError;
+        if (reverse) {
+          screen_.EnableReverse();
+        }
+        screen_.SetChars(screen_.rows() - 1, 0, command_status_->message);
+        if (reverse) {
+          screen_.DisableReverse();
+        }
       }
       return;
     }
@@ -230,8 +235,8 @@ void Controller::HandleCommand(const std::string& command) {
   }
 
   // Check if window handles the command.
-  if (active_window()->NotifyCommand(absl::MakeSpan(split_command),
-                                     &command_error_)) {
+  if (command_status_ =
+          active_window()->NotifyCommand(absl::MakeSpan(split_command))) {
     return;
   }
 
@@ -242,7 +247,8 @@ void Controller::HandleCommand(const std::string& command) {
     return;
   }
 
-  command_error_ = "Not an editor command: " + command;
+  command_status_ =
+      CommandStatus::MakeError("Not an editor command: " + command);
 }
 
 void Controller::HandleQuit(const std::vector<std::string>& command) {

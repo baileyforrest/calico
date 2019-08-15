@@ -9,8 +9,10 @@
 #include <utility>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "src/action.h"
 #include "src/base/macros.h"
+#include "src/command-status.h"
 #include "src/key_config.h"
 #include "src/screen.h"
 #include "src/window/command_window.h"
@@ -81,7 +83,7 @@ class Controller : public Screen::Observer {
   KeyConfig key_config_;
   Screen screen_;
   CommandWindow command_window_;
-  std::string command_error_;
+  absl::optional<CommandStatus> command_status_;
 
   Mode mode_ = Mode::NORMAL;
   Mode last_mode_ = Mode::NORMAL;

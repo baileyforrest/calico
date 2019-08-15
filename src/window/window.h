@@ -4,8 +4,10 @@
 #include <string>
 #include <utility>
 
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "src/action.h"
+#include "src/command-status.h"
 
 class Window {
  public:
@@ -19,9 +21,9 @@ class Window {
       const std::function<void(int row, int col, wchar_t val)>& cb) = 0;
   virtual std::pair<int, int> GetCursorPos() = 0;
 
-  // Returns true if the command was handled.
-  virtual bool NotifyCommand(absl::Span<std::string> command,
-                             std::string* error_string) {
-    return false;
+  // Returns command status if we handled the command.
+  virtual absl::optional<CommandStatus> NotifyCommand(
+      absl::Span<std::string> command) {
+    return absl::nullopt;
   }
 };
